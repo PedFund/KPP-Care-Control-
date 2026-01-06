@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KPP Care Control</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Экран входа -->
+        <div id="login-screen" class="screen">
+            <div class="login-container">
+                <h1>🏃 KPP Care Control</h1>
+                <p class="subtitle">Отслеживание ежедневной активности</p>
+                <form id="login-form">
+                    <input type="text" id="login-username" placeholder="Логин" required autocomplete="username">
+                    <input type="password" id="login-password" placeholder="Пароль" required autocomplete="current-password">
+                    <button type="submit">Войти</button>
+                </form>
+                <p class="hint">При первом входе введите свой логин и пароль - они будут сохранены</p>
+            </div>
+        </div>
+
+        <!-- Главный экран пользователя -->
+        <div id="user-screen" class="screen hidden">
+            <header class="app-header">
+                <h2 id="user-welcome">Добро пожаловать!</h2>
+                <button id="logout-btn" class="btn-secondary">Выйти</button>
+            </header>
+
+            <nav class="tabs">
+                <button class="tab-btn active" data-tab="summary">📊 Сводка</button>
+                <button class="tab-btn" data-tab="steps">🚶 Шаги</button>
+                <button class="tab-btn" data-tab="abs">💪 Пресс</button>
+                <button class="tab-btn" data-tab="workout">🏋️ Тренировки</button>
+                <button class="tab-btn" data-tab="water">💧 Вода</button>
+                <button class="tab-btn" data-tab="nutrition">🍽️ Питание</button>
+            </nav>
+
+            <main class="content">
+                <!-- Вкладка: Сводка -->
+                <section id="tab-summary" class="tab-content active">
+                    <div class="summary-grid">
+                        <div class="summary-card">
+                            <h3>Сегодня</h3>
+                            <p class="date-display" id="today-date"></p>
+                        </div>
+                        <div class="summary-card">
+                            <h3>🚶 Норма шагов</h3>
+                            <p class="big-number" id="current-goal">—</p>
+                        </div>
+                        <div class="summary-card">
+                            <h3>📈 Прогресс сегодня</h3>
+                            <p class="big-number" id="today-steps">—</p>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="steps-progress"></div>
+                            </div>
+                        </div>
+                        <div class="summary-card checklist">
+                            <h3>✅ Чек-лист дня</h3>
+                            <div class="checklist-items" id="daily-checklist"></div>
+                        </div>
+                    </div>
+
+                    <div class="missing-days" id="missing-days-alert"></div>
+
+                    <div class="input-section">
+                        <h3>Ввести данные за сегодня</h3>
+                        <form id="today-form" class="compact-form">
+                            <div class="form-row">
+                                <label>
+                                    Всего шагов
+                                    <input type="number" id="input-total-steps" min="0" placeholder="0">
+                                </label>
+                                <label>
+                                    Шагов на дорожке
+                                    <input type="number" id="input-treadmill-steps" min="0" placeholder="0">
+                                </label>
+                            </div>
+                            <div class="form-row">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="input-workout">
+                                    Была тренировка
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="input-abs">
+                                    Пресс сделан
+                                </label>
+                            </div>
+                            <div class="form-row">
+                                <label>
+                                    Питание
+                                    <select id="input-nutrition">
+                                        <option value="2">Существенное переедание</option>
+                                        <option value="1">Небольшое переедание</option>
+                                        <option value="0" selected>По плану</option>
+                                        <option value="-1">Небольшое недоедание</option>
+                                        <option value="-2">Существенное недоедание</option>
+                                    </select>
+                                </label>
+                                <label>
+                                    Вода
+                                    <select id="input-water">
+                                        <option value="0">&lt;250 мл</option>
+                                        <option value="1">250–500 мл</option>
+                                        <option value="2">500–750 мл</option>
+                                        <option value="3" selected>750–1000 мл</option>
+                                        <option value="4">1–1.5 л</option>
+                                        <option value="5">1.5–2 л</option>
+                                        <option value="6">&gt;2 л</option>
+                                    </select>
+                                </label>
+                            </div>
+                            <button type="submit" class="btn-primary">Сохранить</button>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- Вкладка: Шаги -->
+                <section id="tab-steps" class="tab-content">
+                    <div class="stats-header">
+                        <h3>История шагов</h3>
+                        <div class="stats-summary" id="steps-stats"></div>
+                    </div>
+                    <div class="history-container" id="steps-history"></div>
+                </section>
+
+                <!-- Вкладка: Пресс -->
+                <section id="tab-abs" class="tab-content">
+                    <div class="stats-header">
+                        <h3>История пресса</h3>
+                        <div class="stats-summary" id="abs-stats"></div>
+                    </div>
+                    <div class="history-container" id="abs-history"></div>
+                </section>
+
+                <!-- Вкладка: Тренировки -->
+                <section id="tab-workout" class="tab-content">
+                    <div class="stats-header">
+                        <h3>История тренировок</h3>
+                        <div class="stats-summary" id="workout-stats"></div>
+                    </div>
+                    <div class="history-container" id="workout-history"></div>
+                </section>
+
+                <!-- Вкладка: Вода -->
+                <section id="tab-water" class="tab-content">
+                    <div class="stats-header">
+                        <h3>История потребления воды</h3>
+                        <div class="stats-summary" id="water-stats"></div>
+                    </div>
+                    <div class="history-container" id="water-history"></div>
+                </section>
+
+                <!-- Вкладка: Питание -->
+                <section id="tab-nutrition" class="tab-content">
+                    <div class="stats-header">
+                        <h3>История питания</h3>
+                        <div class="stats-summary" id="nutrition-stats"></div>
+                    </div>
+                    <div class="history-container" id="nutrition-history"></div>
+                </section>
+            </main>
+        </div>
+
+        <!-- Главный экран админа -->
+        <div id="admin-screen" class="screen hidden">
+            <header class="app-header">
+                <h2>👑 Админ-панель</h2>
+                <button id="admin-logout-btn" class="btn-secondary">Выйти</button>
+            </header>
+
+            <div class="admin-content">
+                <div class="users-list" id="users-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
+    <!-- Наши скрипты -->
+    <script src="config.js"></script>
+    <script src="firebase-init.js"></script>
+    <script src="auth.js"></script>
+    <script src="data-logic.js"></script>
+    <script src="ui.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

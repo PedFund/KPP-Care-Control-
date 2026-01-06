@@ -1,0 +1,87 @@
+// Главный файл приложения
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Проверяем сессию
+  const session = getSession();
+  
+  if (session) {
+    // Пользователь уже залогинен
+    if (session.isAdmin) {
+      renderAdminScreen();
+    } else {
+      renderUserScreen(session.userId);
+    }
+  } else {
+    // Показываем экран входа
+    showScreen('login-screen');
+  }
+  
+  // === ОБРАБОТЧИКИ ВХОДА ===
+  
+  document.getElementById('login-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const username = document.getElementById('login-username').value.trim();
+    const password = document.getElementById('login-password').value;
+    
+    if (!username || !password) {
+      alert('Введите логин и пароль');
+      return;
+    }
+    
+    const btn = e.target.querySelector('button');
+    btn.disabled = true;
+    btn.textContent = 'Входим...';
+    
+    const result = await login(username, password);
+    
+    if (result.success) {
+      if (result.isAdmin) {
+        renderAdminScreen();
+      } else {
+        renderUserScreen(result.userId);
+        
+        if (result.isNewUser) {
+          alert(`Добро пожаловать, ${username}! 🎉\n\nВаш аккаунт создан.\nНачальная норма шагов: 5000`);
+        }
+      }
+    } else {
+      alert(`Ошибка входа: ${result.error}`);
+      btn.disabled = false;
+      btn.textContent = 'Войти';
+    }
+  });
+  
+  // === ОБРАБОТЧИКИ ВЫХОДА ===
+  
+  document.getElementById('logout-btn').addEventListener('click', logout);
+  document.getElementById('admin-logout-btn').addEventListener('click', logout);
+  
+  // === НАСТРОЙКА ВКЛАДОК ===
+  
+  setupTabs();
+  
+  // === ФОРМА ВВОДА ДАННЫХ ===
+  
+  document.getElementById('today-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const data = {
+      totalSteps: document.getElementById('input-total-steps').value,
+      treadmillSteps: document.getElementById('input-treadmill-steps').value,
+      workout: document.getElementById('input-workout').checked,
+      abs: document.getElementById('input-abs').checked,
+      nutrition: document.getElementById('input-nutrition').value,
+      water: document.getElementById('input-water').value
+    };
+    
+    const btn = e.target.querySelector('button');
+    btn.disabled = true;
+    btn.textContent = 'Сохраняем...';
+    
+    await saveDayAndRefresh(getDateKey(), data);
+    
+    btn.disabled = false;
+    btn.textContent = 'Сохранить';
+  });
+});
