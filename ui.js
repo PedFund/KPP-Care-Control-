@@ -92,7 +92,7 @@ function renderSummary() {
   } else {
     document.getElementById('input-total-steps').value = '';
     document.getElementById('input-treadmill-steps').value = '';
-    document.getElementById('input-morning-exercise').checked = false;
+    document.getElementById('input-morningExercise').checked = false;
     document.getElementById('input-workout').checked = false;
     document.getElementById('input-abs').checked = false;
     document.getElementById('input-nutrition').value = 0;
@@ -228,6 +228,9 @@ function loadTabData(tabName) {
     case 'steps':
       renderStepsHistory();
       break;
+    case 'morningExercise':
+      renderMorningExerciseHistory();
+      break;
     case 'abs':
       renderAbsHistory();
       break;
@@ -341,6 +344,64 @@ function renderStepsHistory() {
   }
   
   document.getElementById('steps-history').innerHTML = html || '<p>Нет данных</p>';
+}
+// === ИСТОРИЯ ЗАРЯДОК ===
+function renderMorningExerciseHistory() {
+  const last7Days = getLast7DaysStats(currentHistory, 'morningExercise');
+  const weeks = getWeeklyStats(currentHistory, 'morningExercise', 4);
+
+  let totalDone = 0;
+  let totalDays = 0;
+
+  Object.values(currentHistory).forEach(entry => {
+    if (entry.morningExercise !== undefined) {
+      totalDays++;
+      if (entry.morningExercise === 1) totalDone++;
+    }
+  });
+
+  const percentage =
+    totalDays > 0 ? Math.round((totalDone / totalDays) * 100) : 0;
+
+  document.getElementById('morningExercise-stats').innerHTML = `
+    <div class="stat-item">
+      <span class="stat-label">Всего дней</span>
+      <span class="stat-value">${totalDays}</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">Выполнено</span>
+      <span class="stat-value">${totalDone}</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">% выполнения</span>
+      <span class="stat-value">${percentage}%</span>
+    </div>
+  `;
+
+  let html = '';
+
+  if (last7Days.length > 0) {
+    html += `
+      <div class="history-section">
+        <h4>Последние 7 дней</h4>
+        <div class="history-grid">
+          ${last7Days.map(item => `
+            <div class="history-item ${item.value === 1 ? 'success' : ''}">
+              <div class="history-date">
+                ${getDayName(item.date)}, ${formatDate(item.date).split(' ')[0]}
+              </div>
+              <div class="history-value">
+                ${item.value === 1 ? '✅ Выполнена' : '⬜ Не выполнена'}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  document.getElementById('morningEexercise-history').innerHTML =
+    html || '<p>Нет данных</p>';
 }
 
 // === ИСТОРИЯ ПРЕССА ===
