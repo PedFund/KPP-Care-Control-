@@ -163,6 +163,7 @@ async function saveDayData(userId, dateKey, data, userData, history) {
       treadmillSteps: parseInt(data.treadmillSteps) || 0,
       goal: goalForThisDay,
       treadmillGoal: userData.treadmillGoal || 3000,
+      morningExercise: data.morningExercise ? 1 : 0, // ← НОВОЕ
       workout: data.workout ? 1 : 0,
       abs: data.abs ? 1 : 0,
       nutrition: parseInt(data.nutrition) || 0,
