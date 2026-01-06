@@ -84,6 +84,7 @@ function renderSummary() {
   if (todayEntry) {
     document.getElementById('input-total-steps').value = todayEntry.totalSteps || '';
     document.getElementById('input-treadmill-steps').value = todayEntry.treadmillSteps || '';
+    document.getElementById('input-morningExercise').checked = todayEntry.morningExercise === 1;
     document.getElementById('input-workout').checked = todayEntry.workout === 1;
     document.getElementById('input-abs').checked = todayEntry.abs === 1;
     document.getElementById('input-nutrition').value = todayEntry.nutrition || 0;
@@ -91,6 +92,7 @@ function renderSummary() {
   } else {
     document.getElementById('input-total-steps').value = '';
     document.getElementById('input-treadmill-steps').value = '';
+    document.getElementById('input-morning-exercise').checked = false;
     document.getElementById('input-workout').checked = false;
     document.getElementById('input-abs').checked = false;
     document.getElementById('input-nutrition').value = 0;
@@ -102,6 +104,7 @@ function renderChecklist(todayEntry) {
   const checklist = [
     { icon: '🚶', label: 'Шаги', key: 'totalSteps', check: (e) => e && e.totalSteps > 0 },
     { icon: '🏃', label: 'Дорожка', key: 'treadmillSteps', check: (e) => e && e.treadmillSteps > 0 },
+    { icon: '🧘', label: 'Зарядка', key: 'morningExercise', check: (e) => e && e.morningExercise === 1 },
     { icon: '🏋️', label: 'Тренировка', key: 'workout', check: (e) => e && e.workout === 1 },
     { icon: '💪', label: 'Пресс', key: 'abs', check: (e) => e && e.abs === 1 },
     { icon: '💧', label: 'Вода', key: 'water', check: (e) => e && e.water >= 3 },
@@ -176,6 +179,7 @@ function openDayInputDialog(dateKey) {
   
   if (treadmillSteps === null) return;
   
+  const morningExercise = confirm('Была зарядка?');
   const workout = confirm('Была тренировка?');
   const abs = confirm('Пресс был сделан?');
   
@@ -193,6 +197,7 @@ function openDayInputDialog(dateKey) {
   saveDayAndRefresh(dateKey, {
     totalSteps: totalSteps,
     treadmillSteps: treadmillSteps,
+    morningExercise: morningExercise,
     workout: workout,
     abs: abs,
     nutrition: nutrition,
@@ -632,11 +637,13 @@ async function renderAdminScreen() {
     const todayEntry = user.history[today];
     const todaySteps = todayEntry ? todayEntry.totalSteps : 0;
     
+    let totalMorningExercises = 0;
     let totalAbs = 0;
     let totalWorkouts = 0;
     let totalDays = Object.keys(user.history).length;
     
     Object.values(user.history).forEach(entry => {
+      if (entry.morningExercise === 1) totalMorningExercises++;
       if (entry.abs === 1) totalAbs++;
       if (entry.workout === 1) totalWorkouts++;
     });
@@ -670,11 +677,15 @@ async function renderAdminScreen() {
             <div class="user-stat-value">${absolute.avg.toLocaleString('ru-RU')}</div>
           </div>
           <div class="user-stat-item">
-            <div class="user-stat-label">Тренировок</div>
+            <div class="user-stat-label">Зарядки</div>
+            <div class="user-stat-value">${totalMorningExercises}</div>
+          </div>
+          <div class="user-stat-item">
+            <div class="user-stat-label">Тренировки</div>
             <div class="user-stat-value">${totalWorkouts}</div>
           </div>
           <div class="user-stat-item">
-            <div class="user-stat-label">Пресс выполнен</div>
+            <div class="user-stat-label">Прессы</div>
             <div class="user-stat-value">${totalAbs}</div>
           </div>
         </div>
