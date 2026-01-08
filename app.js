@@ -1,4 +1,4 @@
-/ Главный файл приложения
+// Главный файл приложения
 
 document.addEventListener('DOMContentLoaded', () => {
   // Проверяем сессию
