@@ -326,4 +326,23 @@ function getAbsoluteStats(history, metric) {
     avg: count > 0 ? Math.round(sum / count) : 0,
     total: count
   };
+function getWeeklyBinaryStats(history, field, weeksCount = 4) {
+  // ВРЕМЕННО: прокси к старой логике
+  return getWeeklyStats(history, field, weeksCount).map(w => ({
+    ...w,
+    done: Math.round(w.avg * w.count),
+    total: w.count,
+    percent: w.count > 0 ? Math.round((Math.round(w.avg * w.count) / w.count) * 100) : 0
+  }));
 }
+
+function getMonthlyBinaryStatsFromWeeks(history, field, monthsCount = 3) {
+  // ВРЕМЕННО: прокси к старой логике
+  return getMonthlyStats(history, field, monthsCount).map(m => ({
+    ...m,
+    done: Math.round(m.avg * m.count),
+    total: m.count,
+    percent: m.count > 0 ? Math.round((Math.round(m.avg * m.count) / m.count) * 100) : 0
+  }));
+}
+
