@@ -349,7 +349,9 @@ function renderStepsHistory() {
 function renderMorningExerciseHistory() {
   const last7Days = getLast7DaysStats(currentHistory, 'morningExercise');
   const weeks = getWeeklyStats(currentHistory, 'morningExercise', 4);
+  const months = getMonthlyStats(currentHistory, 'morningExercise', 3);
 
+  // Подсчёт за всё время
   let totalDone = 0;
   let totalDays = 0;
 
@@ -363,6 +365,7 @@ function renderMorningExerciseHistory() {
   const percentage =
     totalDays > 0 ? Math.round((totalDone / totalDays) * 100) : 0;
 
+  // Статистика
   document.getElementById('morningExercise-stats').innerHTML = `
     <div class="stat-item">
       <span class="stat-label">Всего дней</span>
@@ -380,6 +383,7 @@ function renderMorningExerciseHistory() {
 
   let html = '';
 
+  // === Последние 7 дней ===
   if (last7Days.length > 0) {
     html += `
       <div class="history-section">
@@ -395,6 +399,56 @@ function renderMorningExerciseHistory() {
               </div>
             </div>
           `).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  // === По неделям ===
+  if (weeks.length > 0) {
+    html += `
+      <div class="history-section">
+        <h4>По неделям</h4>
+        <div class="history-grid">
+          ${weeks.map(week => {
+            const done = Math.round(week.avg * week.count);
+            const percent = week.count > 0
+              ? Math.round((done / week.count) * 100)
+              : 0;
+
+            return `
+              <div class="history-item">
+                <div class="history-date">${week.period}</div>
+                <div class="history-value">${done} / ${week.count}</div>
+                <div style="font-size:0.75em;color:#666;">${percent}%</div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  // === По месяцам ===
+  if (months.length > 0) {
+    html += `
+      <div class="history-section">
+        <h4>По месяцам</h4>
+        <div class="history-grid">
+          ${months.map(month => {
+            const done = Math.round(month.avg * month.count);
+            const percent = month.count > 0
+              ? Math.round((done / month.count) * 100)
+              : 0;
+
+            return `
+              <div class="history-item">
+                <div class="history-date">${month.period}</div>
+                <div class="history-value">${done} / ${month.count}</div>
+                <div style="font-size:0.75em;color:#666;">${percent}%</div>
+              </div>
+            `;
+          }).join('')}
         </div>
       </div>
     `;
