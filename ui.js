@@ -400,7 +400,7 @@ function renderMorningExerciseHistory() {
     `;
   }
 
-  document.getElementById('morningEexercise-history').innerHTML =
+  document.getElementById('morningExercise-history').innerHTML =
     html || '<p>Нет данных</p>';
 }
 
