@@ -348,8 +348,7 @@ function renderStepsHistory() {
 // === ИСТОРИЯ ЗАРЯДОК ===
 function renderMorningExerciseHistory() {
   const last7Days = getLast7DaysStats(currentHistory, 'morningExercise');
-  const weeks = getWeeklyBinaryStats(currentHistory, 'morningExercise', 4);
-  const months = getMonthlyBinaryStatsFromWeeks(currentHistory, 'morningExercise', 3);
+  const weeks = getWeeklyStats(currentHistory, 'morningExercise', 4);
 
   let totalDone = 0;
   let totalDays = 0;
@@ -361,7 +360,8 @@ function renderMorningExerciseHistory() {
     }
   });
 
-  const percentage = totalDays > 0 ? Math.round((totalDone / totalDays) * 100) : 0;
+  const percentage =
+    totalDays > 0 ? Math.round((totalDone / totalDays) * 100) : 0;
 
   document.getElementById('morningExercise-stats').innerHTML = `
     <div class="stat-item">
@@ -380,7 +380,6 @@ function renderMorningExerciseHistory() {
 
   let html = '';
 
-  // Последние 7 дней
   if (last7Days.length > 0) {
     html += `
       <div class="history-section">
@@ -401,63 +400,29 @@ function renderMorningExerciseHistory() {
     `;
   }
 
-  // По неделям
-  if (weeks.length > 0) {
-    html += `
-      <div class="history-section">
-        <h4>По неделям</h4>
-        <div class="history-grid">
-          ${weeks.map(w => `
-            <div class="history-item">
-              <div class="history-date">${w.period}</div>
-              <div class="history-value">${w.done} / ${w.total}</div>
-              <div class="history-percent">${w.percent}%</div>
-            </div>
-          `).join('')}
-        </div>
-      </div>
-    `;
-  }
-
-  // По месяцам
-  if (months.length > 0) {
-    html += `
-      <div class="history-section">
-        <h4>По месяцам</h4>
-        <div class="history-grid">
-          ${months.map(m => `
-            <div class="history-item">
-              <div class="history-date">${m.period}</div>
-              <div class="history-value">${m.done} / ${m.total}</div>
-              <div class="history-percent">${m.percent}%</div>
-            </div>
-          `).join('')}
-        </div>
-      </div>
-    `;
-  }
-
-  document.getElementById('morningExercise-history').innerHTML =
+  document.getElementById('morningEexercise-history').innerHTML =
     html || '<p>Нет данных</p>';
 }
+
 // === ИСТОРИЯ ПРЕССА ===
+
 function renderAbsHistory() {
   const last7Days = getLast7DaysStats(currentHistory, 'abs');
-  const weeks = getWeeklyBinaryStats(currentHistory, 'abs', 4);
-  const months = getMonthlyBinaryStatsFromWeeks(currentHistory, 'abs', 3);
-
+  const weeks = getWeeklyStats(currentHistory, 'abs', 4);
+  const months = getMonthlyStats(currentHistory, 'abs', 3);
+  
+  // Подсчитываем выполнения
   let totalDone = 0;
   let totalDays = 0;
-
   Object.values(currentHistory).forEach(entry => {
     if (entry.abs !== undefined) {
       totalDays++;
       if (entry.abs === 1) totalDone++;
     }
   });
-
+  
   const percentage = totalDays > 0 ? Math.round((totalDone / totalDays) * 100) : 0;
-
+  
   document.getElementById('abs-stats').innerHTML = `
     <div class="stat-item">
       <span class="stat-label">Всего дней</span>
@@ -472,9 +437,9 @@ function renderAbsHistory() {
       <span class="stat-value">${percentage}%</span>
     </div>
   `;
-
+  
   let html = '';
-
+  
   if (last7Days.length > 0) {
     html += `
       <div class="history-section">
@@ -482,76 +447,56 @@ function renderAbsHistory() {
         <div class="history-grid">
           ${last7Days.map(item => `
             <div class="history-item ${item.value === 1 ? 'success' : ''}">
-              <div class="history-date">
-                ${getDayName(item.date)}, ${formatDate(item.date).split(' ')[0]}
-              </div>
-              <div class="history-value">
-                ${item.value === 1 ? '✅ Сделан' : '⬜ Не сделан'}
-              </div>
+              <div class="history-date">${getDayName(item.date)}, ${formatDate(item.date).split(' ')[0]}</div>
+              <div class="history-value">${item.value === 1 ? '✅ Сделан' : '⬜ Не сделан'}</div>
             </div>
           `).join('')}
         </div>
       </div>
     `;
   }
-
+  
   if (weeks.length > 0) {
     html += `
       <div class="history-section">
         <h4>По неделям</h4>
         <div class="history-grid">
-          ${weeks.map(w => `
-            <div class="history-item">
-              <div class="history-date">${w.period}</div>
-              <div class="history-value">${w.done} / ${w.total}</div>
-              <div class="history-percent">${w.percent}%</div>
-            </div>
-          `).join('')}
+          ${weeks.map(week => {
+            const weekPercent = week.count > 0 ? Math.round((week.avg * week.count / week.count) * 100) : 0;
+            return `
+              <div class="history-item">
+                <div class="history-date">${week.period}</div>
+                <div class="history-value">${Math.round(week.avg * week.count)} / ${week.count}</div>
+                <div style="font-size:0.75em;color:#666;">${weekPercent}%</div>
+              </div>
+            `;
+          }).join('')}
         </div>
       </div>
     `;
   }
-
-  if (months.length > 0) {
-    html += `
-      <div class="history-section">
-        <h4>По месяцам</h4>
-        <div class="history-grid">
-          ${months.map(m => `
-            <div class="history-item">
-              <div class="history-date">${m.period}</div>
-              <div class="history-value">${m.done} / ${m.total}</div>
-              <div class="history-percent">${m.percent}%</div>
-            </div>
-          `).join('')}
-        </div>
-      </div>
-    `;
-  }
-
-  document.getElementById('abs-history').innerHTML =
-    html || '<p>Нет данных</p>';
+  
+  document.getElementById('abs-history').innerHTML = html || '<p>Нет данных</p>';
 }
 
 // === ИСТОРИЯ ТРЕНИРОВОК ===
+
 function renderWorkoutHistory() {
   const last7Days = getLast7DaysStats(currentHistory, 'workout');
-  const weeks = getWeeklyBinaryStats(currentHistory, 'workout', 4);
-  const months = getMonthlyBinaryStatsFromWeeks(currentHistory, 'workout', 3);
-
-  let totalDone = 0;
+  const weeks = getWeeklyStats(currentHistory, 'workout', 4);
+  const months = getMonthlyStats(currentHistory, 'workout', 3);
+  
+  let totalWorkouts = 0;
   let totalDays = 0;
-
   Object.values(currentHistory).forEach(entry => {
     if (entry.workout !== undefined) {
       totalDays++;
-      if (entry.workout === 1) totalDone++;
+      if (entry.workout === 1) totalWorkouts++;
     }
   });
-
-  const percentage =
-    totalDays > 0 ? Math.round((totalDone / totalDays) * 100) : 0;
-
+  
+  const percentage = totalDays > 0 ? Math.round((totalWorkouts / totalDays) * 100) : 0;
+  
   document.getElementById('workout-stats').innerHTML = `
     <div class="stat-item">
       <span class="stat-label">Всего дней</span>
@@ -559,17 +504,16 @@ function renderWorkoutHistory() {
     </div>
     <div class="stat-item">
       <span class="stat-label">Тренировок</span>
-      <span class="stat-value">${totalDone}</span>
+      <span class="stat-value">${totalWorkouts}</span>
     </div>
     <div class="stat-item">
       <span class="stat-label">% активности</span>
       <span class="stat-value">${percentage}%</span>
     </div>
   `;
-
+  
   let html = '';
-
-  // Последние 7 дней
+  
   if (last7Days.length > 0) {
     html += `
       <div class="history-section">
@@ -577,59 +521,33 @@ function renderWorkoutHistory() {
         <div class="history-grid">
           ${last7Days.map(item => `
             <div class="history-item ${item.value === 1 ? 'success' : ''}">
-              <div class="history-date">
-                ${getDayName(item.date)}, ${formatDate(item.date).split(' ')[0]}
-              </div>
-              <div class="history-value">
-                ${item.value === 1 ? '✅ Была' : '⬜ Не было'}
-              </div>
+              <div class="history-date">${getDayName(item.date)}, ${formatDate(item.date).split(' ')[0]}</div>
+              <div class="history-value">${item.value === 1 ? '✅ Была' : '⬜ Не было'}</div>
             </div>
           `).join('')}
         </div>
       </div>
     `;
   }
-
-  // По неделям
+  
   if (weeks.length > 0) {
     html += `
       <div class="history-section">
         <h4>По неделям</h4>
         <div class="history-grid">
-          ${weeks.map(w => `
+          ${weeks.map(week => `
             <div class="history-item">
-              <div class="history-date">${w.period}</div>
-              <div class="history-value">${w.done} / ${w.total}</div>
-              <div class="history-percent">${w.percent}%</div>
+              <div class="history-date">${week.period}</div>
+              <div class="history-value">${Math.round(week.avg * week.count)} / ${week.count}</div>
             </div>
           `).join('')}
         </div>
       </div>
     `;
   }
-
-  // По месяцам
-  if (months.length > 0) {
-    html += `
-      <div class="history-section">
-        <h4>По месяцам</h4>
-        <div class="history-grid">
-          ${months.map(m => `
-            <div class="history-item">
-              <div class="history-date">${m.period}</div>
-              <div class="history-value">${m.done} / ${m.total}</div>
-              <div class="history-percent">${m.percent}%</div>
-            </div>
-          `).join('')}
-        </div>
-      </div>
-    `;
-  }
-
-  document.getElementById('workout-history').innerHTML =
-    html || '<p>Нет данных</p>';
+  
+  document.getElementById('workout-history').innerHTML = html || '<p>Нет данных</p>';
 }
-
 
 // === ИСТОРИЯ ВОДЫ ===
 
