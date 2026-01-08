@@ -308,7 +308,7 @@ function renderStepsHistory() {
   if (weeks.length > 0) {
     html += `
       <div class="history-section">
-        <h4>По неделям</h4>
+        <h4>По неделям (с понедельника)</h4>
         <div class="history-grid">
           ${weeks.map(week => `
             <div class="history-item">
@@ -348,10 +348,11 @@ function renderStepsHistory() {
   
   document.getElementById('steps-history').innerHTML = html || '<p>Нет данных</p>';
 }
-// === ИСТОРИЯ ЗАРЯДОК ===
+
+// === ИСТОРИЯ ЗАРЯДКИ ===
 function renderMorningExerciseHistory() {
   const last7Days = getLast7DaysStats(currentHistory, 'morningExercise');
-  const weeks = getWeeklyStats(currentHistory, 'morningExercise', 4);
+  const weeks = getWeeklyBinaryStats(currentHistory, 'morningExercise', 4);
 
   let totalDone = 0;
   let totalDays = 0;
@@ -363,8 +364,7 @@ function renderMorningExerciseHistory() {
     }
   });
 
-  const percentage =
-    totalDays > 0 ? Math.round((totalDone / totalDays) * 100) : 0;
+  const percentage = totalDays > 0 ? Math.round((totalDone / totalDays) * 100) : 0;
 
   document.getElementById('morningExercise-stats').innerHTML = `
     <div class="stat-item">
@@ -403,15 +403,31 @@ function renderMorningExerciseHistory() {
     `;
   }
 
-  document.getElementById('morningExercise-history').innerHTML =
-    html || '<p>Нет данных</p>';
+  if (weeks.length > 0) {
+    html += `
+      <div class="history-section">
+        <h4>По неделям (с понедельника)</h4>
+        <div class="history-grid">
+          ${weeks.map(week => `
+            <div class="history-item ${week.percentage >= 70 ? 'success' : week.percentage >= 50 ? 'warning' : ''}">
+              <div class="history-date">${week.period}</div>
+              <div class="history-value">${week.done} / ${week.total}</div>
+              <div style="font-size:0.75em;color:#666;">${week.percentage}%</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  document.getElementById('morningExercise-history').innerHTML = html || '<p>Нет данных</p>';
 }
 
 // === ИСТОРИЯ ПРЕССА ===
 
 function renderAbsHistory() {
   const last7Days = getLast7DaysStats(currentHistory, 'abs');
-  const weeks = getWeeklyStats(currentHistory, 'abs', 4);
+  const weeks = getWeeklyBinaryStats(currentHistory, 'abs', 4);
   const months = getMonthlyStats(currentHistory, 'abs', 3);
   
   // Подсчитываем выполнения
@@ -462,18 +478,15 @@ function renderAbsHistory() {
   if (weeks.length > 0) {
     html += `
       <div class="history-section">
-        <h4>По неделям</h4>
+        <h4>По неделям (с понедельника)</h4>
         <div class="history-grid">
-          ${weeks.map(week => {
-            const weekPercent = week.count > 0 ? Math.round((week.avg * week.count / week.count) * 100) : 0;
-            return `
-              <div class="history-item">
-                <div class="history-date">${week.period}</div>
-                <div class="history-value">${Math.round(week.avg * week.count)} / ${week.count}</div>
-                <div style="font-size:0.75em;color:#666;">${weekPercent}%</div>
-              </div>
-            `;
-          }).join('')}
+          ${weeks.map(week => `
+            <div class="history-item ${week.percentage >= 70 ? 'success' : week.percentage >= 50 ? 'warning' : ''}">
+              <div class="history-date">${week.period}</div>
+              <div class="history-value">${week.done} / ${week.total}</div>
+              <div style="font-size:0.75em;color:#666;">${week.percentage}%</div>
+            </div>
+          `).join('')}
         </div>
       </div>
     `;
@@ -486,7 +499,7 @@ function renderAbsHistory() {
 
 function renderWorkoutHistory() {
   const last7Days = getLast7DaysStats(currentHistory, 'workout');
-  const weeks = getWeeklyStats(currentHistory, 'workout', 4);
+  const weeks = getWeeklyBinaryStats(currentHistory, 'workout', 4);
   const months = getMonthlyStats(currentHistory, 'workout', 3);
   
   let totalWorkouts = 0;
@@ -536,12 +549,13 @@ function renderWorkoutHistory() {
   if (weeks.length > 0) {
     html += `
       <div class="history-section">
-        <h4>По неделям</h4>
+        <h4>По неделям (с понедельника)</h4>
         <div class="history-grid">
           ${weeks.map(week => `
-            <div class="history-item">
+            <div class="history-item ${week.percentage >= 70 ? 'success' : week.percentage >= 50 ? 'warning' : ''}">
               <div class="history-date">${week.period}</div>
-              <div class="history-value">${Math.round(week.avg * week.count)} / ${week.count}</div>
+              <div class="history-value">${week.done} / ${week.total}</div>
+              <div style="font-size:0.75em;color:#666;">${week.percentage}%</div>
             </div>
           `).join('')}
         </div>
@@ -557,7 +571,7 @@ function renderWorkoutHistory() {
 function renderWaterHistory() {
   const absolute = getAbsoluteStats(currentHistory, 'water');
   const last7Days = getLast7DaysStats(currentHistory, 'water');
-  const weeks = getWeeklyStats(currentHistory, 'water', 4);
+  const weeks = getWeeklyWaterStats(currentHistory, 4);
   
   const waterLabels = ['<250мл', '250-500мл', '500-750мл', '750мл-1л', '1-1.5л', '1.5-2л', '>2л'];
   
@@ -604,17 +618,21 @@ function renderWaterHistory() {
   if (weeks.length > 0) {
     html += `
       <div class="history-section">
-        <h4>По неделям (среднее)</h4>
+        <h4>По неделям (с понедельника)</h4>
         <div class="history-grid">
-          ${weeks.map(week => `
-            <div class="history-item">
-              <div class="history-date">${week.period}</div>
-              <div class="history-value">${waterLabels[week.avg] || '—'}</div>
-              <div style="font-size:0.75em;color:#666;">
-                ${waterLabels[week.min]}–${waterLabels[week.max]}
+          ${weeks.map(week => {
+            const className = week.avg >= 4 ? 'success' : week.avg >= 3 ? 'warning' : '';
+            return `
+              <div class="history-item ${className}">
+                <div class="history-date">${week.period}</div>
+                <div class="history-value">${week.avgLabel}</div>
+                <div style="font-size:0.75em;color:#666;">
+                  ${week.minLabel}–${week.maxLabel}<br>
+                  (${week.count} дн.)
+                </div>
               </div>
-            </div>
-          `).join('')}
+            `;
+          }).join('')}
         </div>
       </div>
     `;
@@ -628,7 +646,7 @@ function renderWaterHistory() {
 function renderNutritionHistory() {
   const absolute = getAbsoluteStats(currentHistory, 'nutrition');
   const last7Days = getLast7DaysStats(currentHistory, 'nutrition');
-  const weeks = getWeeklyStats(currentHistory, 'nutrition', 4);
+  const weeks = getWeeklyNutritionStats(currentHistory, 4);
   
   const nutritionLabels = {
     '-2': 'Сильное недоедание',
@@ -673,20 +691,161 @@ function renderNutritionHistory() {
   if (weeks.length > 0) {
     html += `
       <div class="history-section">
-        <h4>По неделям (среднее)</h4>
+        <h4>По неделям (с понедельника)</h4>
         <div class="history-grid">
-          ${weeks.map(week => `
-            <div class="history-item">
-              <div class="history-date">${week.period}</div>
-              <div class="history-value" style="font-size:0.85em;">${nutritionLabels[week.avg] || 'По плану'}</div>
-            </div>
-          `).join('')}
+          ${weeks.map(week => {
+            const className = week.avg === 0 ? 'success' : Math.abs(week.avg) === 1 ? 'warning' : 'danger';
+            return `
+              <div class="history-item ${className}">
+                <div class="history-date">${week.period}</div>
+                <div class="history-value" style="font-size:0.85em;">${week.avgLabel}</div>
+                <div style="font-size:0.75em;color:#666;">(${week.count} дн.)</div>
+              </div>
+            `;
+          }).join('')}
         </div>
       </div>
     `;
   }
   
   document.getElementById('nutrition-history').innerHTML = html || '<p>Нет данных</p>';
+}
+
+// === ИЗМЕРЕНИЯ (НОВОЕ!) ===
+
+async function renderMeasurements() {
+  const measurements = await getUserMeasurements(currentUser);
+  const measurementsList = measurementsToList(measurements);
+  const todayKey = getDateKey();
+  const todayMeasurement = measurements[todayKey];
+  
+  // Форма ввода
+  const formHtml = `
+    <div class="input-section">
+      <h3>Добавить измерения за сегодня</h3>
+      <form id="measurements-form-el" class="compact-form">
+        <div class="form-row">
+          <label>
+            Вес, кг
+            <input type="number" id="measurement-weight" step="0.1" placeholder="Например: 71.5" value="${todayMeasurement?.weight || ''}">
+          </label>
+          <label>
+            Рост, см
+            <input type="number" id="measurement-height" step="0.1" placeholder="Например: 175" value="${todayMeasurement?.height || ''}">
+          </label>
+          <label>
+            Возраст, лет
+            <input type="number" id="measurement-age" placeholder="Например: 30" value="${todayMeasurement?.age || ''}">
+          </label>
+        </div>
+        <div class="form-row">
+          <label>
+            Грудь, см
+            <input type="number" id="measurement-chest" step="0.1" placeholder="Например: 95" value="${todayMeasurement?.chest || ''}">
+          </label>
+          <label>
+            Талия, см
+            <input type="number" id="measurement-waist" step="0.1" placeholder="Например: 80" value="${todayMeasurement?.waist || ''}">
+          </label>
+          <label>
+            Живот, см
+            <input type="number" id="measurement-belly" step="0.1" placeholder="Например: 85" value="${todayMeasurement?.belly || ''}">
+          </label>
+          <label>
+            Бёдра, см
+            <input type="number" id="measurement-hips" step="0.1" placeholder="Например: 100" value="${todayMeasurement?.hips || ''}">
+          </label>
+        </div>
+        <div class="form-row">
+          <label style="flex: 1;">
+            Комментарий
+            <input type="text" id="measurement-comment" placeholder="Опционально" value="${todayMeasurement?.comment || ''}">
+          </label>
+        </div>
+        <button type="submit" class="btn-primary">Сохранить измерения</button>
+      </form>
+    </div>
+  `;
+  
+  document.getElementById('measurements-form').innerHTML = formHtml;
+  
+  // Обработчик формы
+  document.getElementById('measurements-form-el').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const data = {
+      weight: document.getElementById('measurement-weight').value,
+      height: document.getElementById('measurement-height').value,
+      age: document.getElementById('measurement-age').value,
+      chest: document.getElementById('measurement-chest').value,
+      waist: document.getElementById('measurement-waist').value,
+      belly: document.getElementById('measurement-belly').value,
+      hips: document.getElementById('measurement-hips').value,
+      comment: document.getElementById('measurement-comment').value
+    };
+    
+    const btn = e.target.querySelector('button');
+    btn.disabled = true;
+    btn.textContent = 'Сохраняем...';
+    
+    const result = await saveMeasurement(currentUser, todayKey, data);
+    
+    if (result.success) {
+      alert('✅ Измерения сохранены!');
+      renderMeasurements(); // Перезагружаем вкладку
+    } else {
+      alert(`❌ ${result.message || 'Ошибка сохранения'}`);
+      btn.disabled = false;
+      btn.textContent = 'Сохранить измерения';
+    }
+  });
+  
+  // История измерений
+  if (measurementsList.length === 0) {
+    document.getElementById('measurements-history').innerHTML = '<p>Нет измерений</p>';
+    return;
+  }
+  
+  const historyHtml = `
+    <div class="history-section">
+      <h4>История измерений</h4>
+      <div class="measurements-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Дата</th>
+              <th>Вес</th>
+              <th>Рост</th>
+              <th>Возраст</th>
+              <th>Грудь</th>
+              <th>Талия</th>
+              <th>Живот</th>
+              <th>Бёдра</th>
+              <th>Комментарий</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${measurementsList.slice(0, 20).map(m => `
+              <tr>
+                <td>${formatDate(m.dateKey)}</td>
+                <td>${formatOptionalNumber(m.weight, 1)}</td>
+                <td>${formatOptionalNumber(m.height, 0)}</td>
+                <td>${formatOptionalNumber(m.age, 0)}</td>
+                <td>${formatOptionalNumber(m.chest, 1)}</td>
+                <td>${formatOptionalNumber(m.waist, 1)}</td>
+                <td>${formatOptionalNumber(m.belly, 1)}</td>
+                <td>${formatOptionalNumber(m.hips, 1)}</td>
+                <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis;">${m.comment || '—'}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+      ${measurementsList.length > 20 ? `<p style="text-align: center; color: #666;">...и ещё ${measurementsList.length - 20} записей</p>` : ''}
+    </div>
+  `;
+  
+  document.getElementById('measurements-history').innerHTML = historyHtml;
 }
 
 // === АДМИН-ПАНЕЛЬ ===
@@ -760,11 +919,4 @@ async function renderAdminScreen() {
   document.getElementById('users-list').innerHTML = html || '<p>Нет пользователей</p>';
   
   showScreen('admin-screen');
-  function renderMeasurements() {
-  document.getElementById('measurements-form').innerHTML =
-    '<p>Форма измерений будет здесь.</p>';
-
-  document.getElementById('measurements-history').innerHTML =
-    '<p>История измерений будет здесь.</p>';
-}}
-
+}
