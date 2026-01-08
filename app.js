@@ -57,9 +57,13 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('logout-btn').addEventListener('click', logout);
   document.getElementById('admin-logout-btn').addEventListener('click', logout);
   
-  // === НАСТРОЙКА ВКЛАДОК ===
+  // === НАСТРОЙКА ВКЛАДОК ПОЛЬЗОВАТЕЛЯ ===
   
   setupTabs();
+  
+  // === НАСТРОЙКА ВКЛАДОК АДМИНА ===
+  
+  setupAdminTabs();
   
   // === ФОРМА ВВОДА ДАННЫХ ===
   
