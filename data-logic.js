@@ -40,6 +40,24 @@ function getDayName(dateKey) {
   return date.toLocaleDateString('ru-RU', { weekday: 'short' });
 }
 
+// === НОВОЕ: Получить понедельник для данной недели ===
+function getMonday(dateKey) {
+  const date = dateFromKey(dateKey);
+  const day = date.getDay(); // 0 = воскресенье, 1 = понедельник, ...
+  const diff = day === 0 ? -6 : 1 - day; // если воскресенье, то -6, иначе 1-day
+  date.setDate(date.getDate() + diff);
+  return getDateKey(date);
+}
+
+// === НОВОЕ: Получить все дни недели начиная с понедельника ===
+function getWeekDays(mondayKey) {
+  const days = [];
+  for (let i = 0; i < 7; i++) {
+    days.push(addDays(mondayKey, i));
+  }
+  return days;
+}
+
 // === РАСЧЁТ НОРМЫ ШАГОВ ===
 
 // Рассчитать новую норму на основе последнего дня с данными
@@ -163,7 +181,7 @@ async function saveDayData(userId, dateKey, data, userData, history) {
       treadmillSteps: parseInt(data.treadmillSteps) || 0,
       goal: goalForThisDay,
       treadmillGoal: userData.treadmillGoal || 3000,
-      morningExercise: data.morningExercise ? 1 : 0, // ← НОВОЕ
+      morningExercise: data.morningExercise ? 1 : 0,
       workout: data.workout ? 1 : 0,
       abs: data.abs ? 1 : 0,
       nutrition: parseInt(data.nutrition) || 0,
@@ -221,22 +239,25 @@ function getLast7DaysStats(history, metric) {
   return stats;
 }
 
-// Агрегация по неделям
+// === ИСПРАВЛЕНО: Агрегация по неделям (с понедельника) ===
 function getWeeklyStats(history, metric, weeksCount = 4) {
   const today = getDateKey();
   const weeks = [];
   
   for (let w = weeksCount - 1; w >= 0; w--) {
-    const weekEnd = addDays(today, -w * 7);
-    const weekStart = addDays(weekEnd, -6);
+    // Находим понедельник текущей недели
+    const currentMonday = getMonday(today);
+    
+    // Отнимаем w недель (7 * w дней)
+    const weekMonday = addDays(currentMonday, -7 * w);
+    const weekDays = getWeekDays(weekMonday);
     
     let sum = 0;
     let count = 0;
     let min = Infinity;
     let max = -Infinity;
     
-    for (let i = 0; i < 7; i++) {
-      const dateKey = addDays(weekStart, i);
+    weekDays.forEach(dateKey => {
       const entry = history[dateKey];
       
       if (entry && entry[metric] !== undefined) {
@@ -246,15 +267,159 @@ function getWeeklyStats(history, metric, weeksCount = 4) {
         min = Math.min(min, value);
         max = Math.max(max, value);
       }
-    }
+    });
     
     if (count > 0) {
+      const weekStart = weekDays[0];
+      const weekEnd = weekDays[6];
+      
       weeks.push({
-        period: `${formatDate(weekStart).split(' ')[0]}-${formatDate(weekEnd).split(' ')[0]}`,
+        period: `${formatDate(weekStart).split(' ')[0]}-${formatDate(weekEnd).split(' ')[0]} ${formatDate(weekEnd).split(' ')[2]}`,
         avg: Math.round(sum / count),
         min: min === Infinity ? 0 : min,
         max: max === -Infinity ? 0 : max,
-        count
+        count,
+        weekDays: weekDays
+      });
+    }
+  }
+  
+  return weeks;
+}
+
+// === НОВОЕ: Агрегация по неделям для бинарных показателей (зарядка, тренировки, пресс) ===
+function getWeeklyBinaryStats(history, metric, weeksCount = 4) {
+  const today = getDateKey();
+  const weeks = [];
+  
+  for (let w = weeksCount - 1; w >= 0; w--) {
+    const currentMonday = getMonday(today);
+    const weekMonday = addDays(currentMonday, -7 * w);
+    const weekDays = getWeekDays(weekMonday);
+    
+    let doneCount = 0;
+    let totalDays = 0;
+    
+    weekDays.forEach(dateKey => {
+      const entry = history[dateKey];
+      
+      if (entry && entry[metric] !== undefined) {
+        totalDays++;
+        if (entry[metric] === 1) {
+          doneCount++;
+        }
+      }
+    });
+    
+    if (totalDays > 0) {
+      const weekStart = weekDays[0];
+      const weekEnd = weekDays[6];
+      const percentage = Math.round((doneCount / totalDays) * 100);
+      
+      weeks.push({
+        period: `${formatDate(weekStart).split(' ')[0]}-${formatDate(weekEnd).split(' ')[0]} ${formatDate(weekEnd).split(' ')[2]}`,
+        done: doneCount,
+        total: totalDays,
+        percentage: percentage,
+        weekDays: weekDays
+      });
+    }
+  }
+  
+  return weeks;
+}
+
+// === НОВОЕ: Агрегация по неделям для воды (с правильным средним) ===
+function getWeeklyWaterStats(history, weeksCount = 4) {
+  const waterLabels = ['<250мл', '250-500мл', '500-750мл', '750мл-1л', '1-1.5л', '1.5-2л', '>2л'];
+  const today = getDateKey();
+  const weeks = [];
+  
+  for (let w = weeksCount - 1; w >= 0; w--) {
+    const currentMonday = getMonday(today);
+    const weekMonday = addDays(currentMonday, -7 * w);
+    const weekDays = getWeekDays(weekMonday);
+    
+    let sum = 0;
+    let count = 0;
+    let min = Infinity;
+    let max = -Infinity;
+    
+    weekDays.forEach(dateKey => {
+      const entry = history[dateKey];
+      
+      if (entry && entry.water !== undefined) {
+        const value = entry.water;
+        sum += value;
+        count++;
+        min = Math.min(min, value);
+        max = Math.max(max, value);
+      }
+    });
+    
+    if (count > 0) {
+      const weekStart = weekDays[0];
+      const weekEnd = weekDays[6];
+      const avgValue = Math.round(sum / count);
+      
+      weeks.push({
+        period: `${formatDate(weekStart).split(' ')[0]}-${formatDate(weekEnd).split(' ')[0]} ${formatDate(weekEnd).split(' ')[2]}`,
+        avg: avgValue,
+        avgLabel: waterLabels[avgValue] || '—',
+        min: min === Infinity ? 0 : min,
+        minLabel: waterLabels[min] || '—',
+        max: max === -Infinity ? 0 : max,
+        maxLabel: waterLabels[max] || '—',
+        count,
+        weekDays: weekDays
+      });
+    }
+  }
+  
+  return weeks;
+}
+
+// === НОВОЕ: Агрегация по неделям для питания (с правильным средним) ===
+function getWeeklyNutritionStats(history, weeksCount = 4) {
+  const nutritionLabels = {
+    '-2': 'Сильное недоедание',
+    '-1': 'Небольшое недоедание',
+    '0': 'По плану',
+    '1': 'Небольшое переедание',
+    '2': 'Сильное переедание'
+  };
+  
+  const today = getDateKey();
+  const weeks = [];
+  
+  for (let w = weeksCount - 1; w >= 0; w--) {
+    const currentMonday = getMonday(today);
+    const weekMonday = addDays(currentMonday, -7 * w);
+    const weekDays = getWeekDays(weekMonday);
+    
+    let sum = 0;
+    let count = 0;
+    
+    weekDays.forEach(dateKey => {
+      const entry = history[dateKey];
+      
+      if (entry && entry.nutrition !== undefined) {
+        sum += entry.nutrition;
+        count++;
+      }
+    });
+    
+    if (count > 0) {
+      const weekStart = weekDays[0];
+      const weekEnd = weekDays[6];
+      const avgValue = Math.round(sum / count);
+      
+      weeks.push({
+        period: `${formatDate(weekStart).split(' ')[0]}-${formatDate(weekEnd).split(' ')[0]} ${formatDate(weekEnd).split(' ')[2]}`,
+        avg: avgValue,
+        avgLabel: nutritionLabels[avgValue] || 'По плану',
+        count,
+        weekDays: weekDays
       });
     }
   }
@@ -326,13 +491,4 @@ function getAbsoluteStats(history, metric) {
     avg: count > 0 ? Math.round(sum / count) : 0,
     total: count
   };
-function getWeeklyBinaryStats(history, field, weeksCount = 4) {
-  // ВРЕМЕННО: прокси к старой логике
-  return getWeeklyStats(history, field, weeksCount).map(w => ({
-    ...w,
-    done: Math.round(w.avg * w.count),
-    total: w.count,
-    percent: w.count > 0 ? Math.round((Math.round(w.avg * w.count) / w.count) * 100) : 0
-  }));
-}
 }
