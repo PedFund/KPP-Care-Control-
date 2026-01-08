@@ -5,8 +5,10 @@
 // Получить dateKey в формате YYYY-MM-DD (с обнулением времени)
 function getDateKey(date = new Date()) {
   const d = new Date(date);
-  d.setHours(0, 0, 0, 0);
-  return d.toISOString().split('T')[0];
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 // Получить объект Date из dateKey
@@ -161,6 +163,7 @@ async function saveDayData(userId, dateKey, data, userData, history) {
       treadmillSteps: parseInt(data.treadmillSteps) || 0,
       goal: goalForThisDay,
       treadmillGoal: userData.treadmillGoal || 3000,
+      morningExercise: data.morningExercise ? 1 : 0, // ← НОВОЕ
       workout: data.workout ? 1 : 0,
       abs: data.abs ? 1 : 0,
       nutrition: parseInt(data.nutrition) || 0,
