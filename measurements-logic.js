@@ -188,4 +188,62 @@ function formatOptionalNumber(value, digits = 1) {
     maximumFractionDigits: digits
   });
 }
+.measurements-table {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 1rem;
+}
 
+.measurements-table table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.measurements-table thead {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.measurements-table th,
+.measurements-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.measurements-table th {
+  font-weight: 600;
+  font-size: 0.9em;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.measurements-table tbody tr:hover {
+  background-color: #f5f5f5;
+  transition: background-color 0.2s ease;
+}
+
+.measurements-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.measurements-table td {
+  font-size: 0.95em;
+  color: #333;
+}
+
+/* Адаптивность для таблицы */
+@media (max-width: 768px) {
+  .measurements-table {
+    font-size: 0.85em;
+  }
+  
+  .measurements-table th,
+  .measurements-table td {
+    padding: 8px 10px;
+  }
+}
