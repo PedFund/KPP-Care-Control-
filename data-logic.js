@@ -1,4 +1,5 @@
 // Модуль бизнес-логики данных
+// ОБНОВЛЕНО: 2026-01-08 - Исправлена недельная агрегация, добавлены функции работы с неделями
 
 // === УТИЛИТЫ ДЛЯ РАБОТЫ С ДАТАМИ ===
 
@@ -41,6 +42,8 @@ function getDayName(dateKey) {
 }
 
 // === НОВОЕ: Получить понедельник для данной недели ===
+// Добавлено: 2026-01-08
+// Причина: Корректная агрегация по неделям начиная с понедельника
 function getMonday(dateKey) {
   const date = dateFromKey(dateKey);
   const day = date.getDay(); // 0 = воскресенье, 1 = понедельник, ...
@@ -50,6 +53,7 @@ function getMonday(dateKey) {
 }
 
 // === НОВОЕ: Получить все дни недели начиная с понедельника ===
+// Добавлено: 2026-01-08
 function getWeekDays(mondayKey) {
   const days = [];
   for (let i = 0; i < 7; i++) {
@@ -198,7 +202,7 @@ async function saveDayData(userId, dateKey, data, userData, history) {
   }
 }
 
-// Получить всех пользователей (для админа)
+// Получить всех пользователей (для админа) - DEPRECATED, используйте getAllUsersWithDetails из admin-logic.js
 async function getAllUsers() {
   try {
     const snapshot = await db.collection('users').get();
@@ -240,6 +244,9 @@ function getLast7DaysStats(history, metric) {
 }
 
 // === ИСПРАВЛЕНО: Агрегация по неделям (с понедельника) ===
+// Изменено: 2026-01-08
+// Было: неделя начиналась с произвольного дня
+// Стало: неделя всегда начинается с понедельника, считается среднее (не сумма)
 function getWeeklyStats(history, metric, weeksCount = 4) {
   const today = getDateKey();
   const weeks = [];
@@ -258,6 +265,9 @@ function getWeeklyStats(history, metric, weeksCount = 4) {
     let max = -Infinity;
     
     weekDays.forEach(dateKey => {
+      // Для текущей недели считаем только до сегодня
+      if (w === 0 && dateKey > today) return;
+      
       const entry = history[dateKey];
       
       if (entry && entry[metric] !== undefined) {
@@ -271,7 +281,7 @@ function getWeeklyStats(history, metric, weeksCount = 4) {
     
     if (count > 0) {
       const weekStart = weekDays[0];
-      const weekEnd = weekDays[6];
+      const weekEnd = w === 0 && weekDays[6] > today ? today : weekDays[6];
       
       weeks.push({
         period: `${formatDate(weekStart).split(' ')[0]}-${formatDate(weekEnd).split(' ')[0]} ${formatDate(weekEnd).split(' ')[2]}`,
@@ -288,6 +298,9 @@ function getWeeklyStats(history, metric, weeksCount = 4) {
 }
 
 // === НОВОЕ: Агрегация по неделям для бинарных показателей (зарядка, тренировки, пресс) ===
+// Добавлено: 2026-01-08
+// Для: зарядка, тренировки, пресс
+// Считается: выполнено/всего, процент
 function getWeeklyBinaryStats(history, metric, weeksCount = 4) {
   const today = getDateKey();
   const weeks = [];
@@ -301,6 +314,9 @@ function getWeeklyBinaryStats(history, metric, weeksCount = 4) {
     let totalDays = 0;
     
     weekDays.forEach(dateKey => {
+      // Для текущей недели считаем только до сегодня
+      if (w === 0 && dateKey > today) return;
+      
       const entry = history[dateKey];
       
       if (entry && entry[metric] !== undefined) {
@@ -313,7 +329,7 @@ function getWeeklyBinaryStats(history, metric, weeksCount = 4) {
     
     if (totalDays > 0) {
       const weekStart = weekDays[0];
-      const weekEnd = weekDays[6];
+      const weekEnd = w === 0 && weekDays[6] > today ? today : weekDays[6];
       const percentage = Math.round((doneCount / totalDays) * 100);
       
       weeks.push({
@@ -330,6 +346,7 @@ function getWeeklyBinaryStats(history, metric, weeksCount = 4) {
 }
 
 // === НОВОЕ: Агрегация по неделям для воды (с правильным средним) ===
+// Добавлено: 2026-01-08
 function getWeeklyWaterStats(history, weeksCount = 4) {
   const waterLabels = ['<250мл', '250-500мл', '500-750мл', '750мл-1л', '1-1.5л', '1.5-2л', '>2л'];
   const today = getDateKey();
@@ -346,6 +363,9 @@ function getWeeklyWaterStats(history, weeksCount = 4) {
     let max = -Infinity;
     
     weekDays.forEach(dateKey => {
+      // Для текущей недели считаем только до сегодня
+      if (w === 0 && dateKey > today) return;
+      
       const entry = history[dateKey];
       
       if (entry && entry.water !== undefined) {
@@ -359,7 +379,7 @@ function getWeeklyWaterStats(history, weeksCount = 4) {
     
     if (count > 0) {
       const weekStart = weekDays[0];
-      const weekEnd = weekDays[6];
+      const weekEnd = w === 0 && weekDays[6] > today ? today : weekDays[6];
       const avgValue = Math.round(sum / count);
       
       weeks.push({
@@ -380,6 +400,7 @@ function getWeeklyWaterStats(history, weeksCount = 4) {
 }
 
 // === НОВОЕ: Агрегация по неделям для питания (с правильным средним) ===
+// Добавлено: 2026-01-08
 function getWeeklyNutritionStats(history, weeksCount = 4) {
   const nutritionLabels = {
     '-2': 'Сильное недоедание',
@@ -401,6 +422,9 @@ function getWeeklyNutritionStats(history, weeksCount = 4) {
     let count = 0;
     
     weekDays.forEach(dateKey => {
+      // Для текущей недели считаем только до сегодня
+      if (w === 0 && dateKey > today) return;
+      
       const entry = history[dateKey];
       
       if (entry && entry.nutrition !== undefined) {
@@ -411,7 +435,7 @@ function getWeeklyNutritionStats(history, weeksCount = 4) {
     
     if (count > 0) {
       const weekStart = weekDays[0];
-      const weekEnd = weekDays[6];
+      const weekEnd = w === 0 && weekDays[6] > today ? today : weekDays[6];
       const avgValue = Math.round(sum / count);
       
       weeks.push({
@@ -492,3 +516,4 @@ function getAbsoluteStats(history, metric) {
     total: count
   };
 }
+
