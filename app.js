@@ -69,6 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const data = {
       totalSteps: document.getElementById('input-total-steps').value,
       treadmillSteps: document.getElementById('input-treadmill-steps').value,
+      morningExercise: document.getElementById('input-morningExercise').checked,
       workout: document.getElementById('input-workout').checked,
       abs: document.getElementById('input-abs').checked,
       nutrition: document.getElementById('input-nutrition').value,
