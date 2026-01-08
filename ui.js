@@ -243,6 +243,9 @@ function loadTabData(tabName) {
     case 'nutrition':
       renderNutritionHistory();
       break;
+    case 'measurements':
+      renderMeasurements();
+      break;
   }
 }
 
@@ -758,3 +761,11 @@ async function renderAdminScreen() {
   
   showScreen('admin-screen');
 }
+function renderMeasurements() {
+  document.getElementById('measurements-form').innerHTML =
+    '<p>Форма измерений будет здесь.</p>';
+
+  document.getElementById('measurements-history').innerHTML =
+    '<p>История измерений будет здесь.</p>';
+}
+
