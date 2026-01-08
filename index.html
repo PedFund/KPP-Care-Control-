@@ -4,11 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KPP Care Control</title>
+    <!-- ВАЖНО: Основные стили должны быть первыми -->
     <link rel="stylesheet" href="styles.css">
+    <!-- Стили админ-панели -->
+    <link rel="stylesheet" href="admin-styles.css">
 </head>
 <body>
     <div id="app">
-        <!-- Экран входа -->
+        <!-- Экран входа (ОРИГИНАЛЬНЫЙ ДИЗАЙН - НЕ МЕНЯТЬ!) -->
         <div id="login-screen" class="screen">
             <div class="login-container">
                 <h1>🏃 KPP Care Control</h1>
@@ -176,24 +179,38 @@
                     </div>
                     <div class="history-container" id="nutrition-history"></div>
                 </section>
+                
+                <!-- Вкладка: Измерения -->
+                <section id="tab-measurements" class="tab-content">
+                    <div id="measurements-form"></div>
+                    <div id="measurements-history"></div>
+                </section>
             </main>
         </div>
-                    <div class="tab-content" id="tab-measurements">
-                      <h3>📏 Измерения</h3>
-
-                      <div id="measurements-form"></div>
-                      <div id="measurements-history"></div>
-                    </div>          
-        <!-- Главный экран админа -->
+                   
+        <!-- Главный экран админа (НОВАЯ СТРУКТУРА С ВКЛАДКАМИ) -->
         <div id="admin-screen" class="screen hidden">
             <header class="app-header">
                 <h2>👑 Админ-панель</h2>
                 <button id="admin-logout-btn" class="btn-secondary">Выйти</button>
             </header>
 
-            <div class="admin-content">
-                <div class="users-list" id="users-list"></div>
-            </div>
+            <nav class="tabs admin-tabs">
+                <button class="admin-tab-btn active" data-tab="overview">📊 Обзор пользователей</button>
+                <button class="admin-tab-btn" data-tab="details">📋 Детально</button>
+            </nav>
+
+            <main class="content">
+                <!-- Вкладка: Обзор пользователей -->
+                <section id="admin-tab-overview" class="admin-tab-content active">
+                    <div id="users-overview-list"></div>
+                </section>
+                
+                <!-- Вкладка: Детальная статистика -->
+                <section id="admin-tab-details" class="admin-tab-content">
+                    <div id="user-details-content"></div>
+                </section>
+            </main>
         </div>
     </div>
 
@@ -201,13 +218,15 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     
-    <!-- Наши скрипты -->
+    <!-- Наши скрипты (ВАЖНО: порядок подключения!) -->
     <script src="config.js"></script>
     <script src="firebase-init.js"></script>
     <script src="auth.js"></script>
     <script src="data-logic.js"></script>
-    <!-- НОВЫЙ ФАЙЛ -->
     <script src="measurements-logic.js"></script>
+    <!-- Админ-панель: admin-logic.js ДОЛЖЕН быть раньше admin-ui.js -->
+    <script src="admin-logic.js"></script>
+    <script src="admin-ui.js"></script>
     <script src="ui.js"></script>
     <script src="app.js"></script>
 </body>
