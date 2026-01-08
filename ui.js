@@ -760,12 +760,11 @@ async function renderAdminScreen() {
   document.getElementById('users-list').innerHTML = html || '<p>Нет пользователей</p>';
   
   showScreen('admin-screen');
-}
-function renderMeasurements() {
+  function renderMeasurements() {
   document.getElementById('measurements-form').innerHTML =
     '<p>Форма измерений будет здесь.</p>';
 
   document.getElementById('measurements-history').innerHTML =
     '<p>История измерений будет здесь.</p>';
-}
+}}
 
