@@ -370,4 +370,4 @@ function getMonthlyBinaryStatsFromWeeks(history, metric, monthsCount = 3) {
       percent: m.total > 0 ? Math.round((m.done / m.total) * 100) : 0
     }));
 }
-
+}
