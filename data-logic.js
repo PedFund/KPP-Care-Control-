@@ -335,7 +335,7 @@ function getWeeklyBinaryStats(history, field, weeksCount = 4) {
     percent: w.count > 0 ? Math.round((Math.round(w.avg * w.count) / w.count) * 100) : 0
   }));
 }
-
+}
 function getMonthlyBinaryStatsFromWeeks(history, field, monthsCount = 3) {
   // ВРЕМЕННО: прокси к старой логике
   return getMonthlyStats(history, field, monthsCount).map(m => ({
@@ -363,5 +363,4 @@ function getMonthlyBinaryStatsFromWeeks(history, field, monthsCount = 3) {
     total: m.count,
     percent: m.count > 0 ? Math.round((Math.round(m.avg * m.count) / m.count) * 100) : 0
   }));
-}
 }
