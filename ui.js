@@ -349,8 +349,8 @@ function renderStepsHistory() {
 // === ИСТОРИЯ ЗАРЯДОК ===
 function renderMorningExerciseHistory() {
   const last7Days = getLast7DaysStats(currentHistory, 'morningExercise');
-  const weeks = getWeeklyStats(currentHistory, 'morningExercise', 4);
-  const months = getMonthlyStats(currentHistory, 'morningExercise', 3);
+  const weeks = getWeeklyBinaryStats(currentHistory, 'morningExercise', 4);
+  const months = getMonthlyBinaryStatsFromWeeks(currentHistory, 'morningExercise', 3);
 
   // Подсчёт за всё время
   let totalDone = 0;
@@ -412,7 +412,8 @@ function renderMorningExerciseHistory() {
         <h4>По неделям</h4>
         <div class="history-grid">
           ${weeks.map(week => {
-            const done = Math.round(week.avg * week.count);
+            const done = week.done;
+            const count = week.total;
             const percent = week.count > 0
               ? Math.round((done / week.count) * 100)
               : 0;
@@ -420,8 +421,9 @@ function renderMorningExerciseHistory() {
             return `
               <div class="history-item">
                 <div class="history-date">${week.period}</div>
-                <div class="history-value">${done} / ${week.count}</div>
-                <div style="font-size:0.75em;color:#666;">${percent}%</div>
+                <div class="history-value">${done} / ${count}</div>
+                <div style="font-size:0.75em;color:#666;">${week.percent}%</div>
+
               </div>
             `;
           }).join('')}
@@ -464,8 +466,8 @@ function renderMorningExerciseHistory() {
 
 function renderAbsHistory() {
   const last7Days = getLast7DaysStats(currentHistory, 'abs');
-  const weeks = getWeeklyStats(currentHistory, 'abs', 4);
-  const months = getMonthlyStats(currentHistory, 'abs', 3);
+  const weeks = getWeeklyBinaryStats(currentHistory, 'abs', 4);
+  const months = getMonthlyBinaryStats(currentHistory, 'abs', 3);
   
   // Подсчитываем выполнения
   let totalDone = 0;
@@ -522,8 +524,9 @@ function renderAbsHistory() {
             return `
               <div class="history-item">
                 <div class="history-date">${week.period}</div>
-                <div class="history-value">${Math.round(week.avg * week.count)} / ${week.count}</div>
-                <div style="font-size:0.75em;color:#666;">${weekPercent}%</div>
+                <div class="history-value">${week.done} / ${week.total}</div>
+                <div style="font-size:0.75em;color:#666;">${week.percent}%</div>
+
               </div>
             `;
           }).join('')}
@@ -539,8 +542,8 @@ function renderAbsHistory() {
 
 function renderWorkoutHistory() {
   const last7Days = getLast7DaysStats(currentHistory, 'workout');
-  const weeks = getWeeklyStats(currentHistory, 'workout', 4);
-  const months = getMonthlyStats(currentHistory, 'workout', 3);
+  const weeks = getWeeklyBinaryStats(currentHistory, 'workout', 4);
+  const months = getMonthlyBinaryStats(currentHistory, 'workout', 3);
   
   let totalWorkouts = 0;
   let totalDays = 0;
@@ -578,7 +581,7 @@ function renderWorkoutHistory() {
           ${last7Days.map(item => `
             <div class="history-item ${item.value === 1 ? 'success' : ''}">
               <div class="history-date">${getDayName(item.date)}, ${formatDate(item.date).split(' ')[0]}</div>
-              <div class="history-value">${item.value === 1 ? '✅ Была' : '⬜ Не было'}</div>
+              <div class="history-value">${week.done} / ${week.total}</div>
             </div>
           `).join('')}
         </div>
