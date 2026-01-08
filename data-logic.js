@@ -286,4 +286,88 @@ function getAbsoluteStats(history, metric) {
     avg: count > 0 ? Math.round(sum / count) : 0,
     total: count
   };
+// ===============================
+// БИНАРНАЯ АГРЕГАЦИЯ (0 / 1)
+// Неделя начинается с ПОНЕДЕЛЬНИКА
+// ===============================
+
+// Получить понедельник недели для dateKey
+function getMonday(dateKey) {
+  const d = dateFromKey(dateKey);
+  const day = d.getDay(); // 0=вс, 1=пн
+  const diff = day === 0 ? -6 : 1 - day;
+  d.setDate(d.getDate() + diff);
+  return getDateKey(d);
 }
+
+// Агрегация по неделям для бинарных метрик
+function getWeeklyBinaryStats(history, metric, weeksCount = 4) {
+  const todayKey = getDateKey();
+  const currentMonday = getMonday(todayKey);
+  const weeks = [];
+
+  for (let w = weeksCount - 1; w >= 0; w--) {
+    const weekStart = addDays(currentMonday, -w * 7);
+    const weekEnd = addDays(weekStart, 6);
+
+    let done = 0;
+    let total = 0;
+
+    for (let i = 0; i < 7; i++) {
+      const dateKey = addDays(weekStart, i);
+      const entry = history[dateKey];
+      if (entry && entry[metric] !== undefined) {
+        total++;
+        if (entry[metric] === 1) done++;
+      }
+    }
+
+    if (total > 0) {
+      weeks.push({
+        period: `${formatDate(weekStart)} – ${formatDate(weekEnd)}`,
+        done,
+        total,
+        percent: Math.round((done / total) * 100)
+      });
+    }
+  }
+
+  return weeks;
+}
+
+// Агрегация по месяцам ИЗ НЕДЕЛЬ
+// Месяц определяется по большинству дней недели
+function getMonthlyBinaryStatsFromWeeks(history, metric, monthsCount = 3) {
+  const weeks = getWeeklyBinaryStats(history, metric, 12);
+  const monthsMap = {};
+
+  weeks.forEach(week => {
+    const startKey = week.period.split('–')[0].trim();
+    const startDate = new Date(startKey);
+    const monthKey = `${startDate.getFullYear()}-${startDate.getMonth()}`;
+
+    if (!monthsMap[monthKey]) {
+      monthsMap[monthKey] = {
+        done: 0,
+        total: 0,
+        label: startDate.toLocaleDateString('ru-RU', {
+          month: 'long',
+          year: 'numeric'
+        })
+      };
+    }
+
+    monthsMap[monthKey].done += week.done;
+    monthsMap[monthKey].total += week.total;
+  });
+
+  return Object.values(monthsMap)
+    .slice(-monthsCount)
+    .map(m => ({
+      period: m.label,
+      done: m.done,
+      total: m.total,
+      percent: m.total > 0 ? Math.round((m.done / m.total) * 100) : 0
+    }));
+}
+
