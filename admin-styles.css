@@ -319,3 +319,201 @@
     padding: 0.5rem 0.75rem;
   }
 }
+/* ================================================
+   СТИЛИ ДЛЯ ДЕТАЛЬНОЙ АДМИН-ПАНЕЛИ С ГРАФИКАМИ
+   Добавить в конец styles.css или admin-styles.css
+   ================================================ */
+
+/* === ВКЛАДКИ АДМИНИСТРАТОРА === */
+
+.admin-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 25px;
+  border-bottom: 2px solid #ecf0f1;
+}
+
+.admin-tab-btn {
+  padding: 12px 24px;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 500;
+  color: #7f8c8d;
+  transition: all 0.3s ease;
+  position: relative;
+  bottom: -2px;
+}
+
+.admin-tab-btn:hover {
+  color: #2c3e50;
+  background-color: #ecf0f1;
+}
+
+.admin-tab-btn.active {
+  color: #3498db;
+  border-bottom-color: #3498db;
+  background-color: transparent;
+}
+
+/* === КОНТЕНТ ВКЛАДОК === */
+
+.admin-tab-content {
+  display: none;
+}
+
+.admin-tab-content.active {
+  display: block;
+}
+
+/* === СЕТКА ГРАФИКОВ === */
+
+.admin-charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+  gap: 25px;
+  margin-top: 20px;
+}
+
+@media (max-width: 1200px) {
+  .admin-charts-grid {
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-charts-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* === КОНТЕЙНЕР ГРАФИКА === */
+
+.chart-container {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  border: 1px solid #ecf0f1;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.chart-container:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+}
+
+.chart-container h3 {
+  margin: 0 0 15px 0;
+  font-size: 16px;
+  color: #2c3e50;
+  font-weight: 600;
+  text-align: center;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #ecf0f1;
+}
+
+.chart-container canvas {
+  max-height: 300px;
+  width: 100% !important;
+  height: auto !important;
+}
+
+/* === СЕТКА ПОЛЬЗОВАТЕЛЕЙ (для вкладки Обзор) === */
+
+.users-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+@media (max-width: 768px) {
+  .users-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* === КАРТОЧКА ПОЛЬЗОВАТЕЛЯ === */
+
+.user-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  border: 1px solid #ecf0f1;
+}
+
+.user-card h3 {
+  margin: 0 0 15px 0;
+  font-size: 18px;
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.user-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.user-stat-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-stat-label {
+  font-size: 12px;
+  color: #7f8c8d;
+  margin-bottom: 4px;
+}
+
+.user-stat-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+/* === АНИМАЦИЯ ЗАГРУЗКИ === */
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.chart-container.loading {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* === СТИЛИ ДЛЯ АДАПТИВНОСТИ === */
+
+@media (max-width: 480px) {
+  .admin-tabs {
+    flex-direction: column;
+    gap: 5px;
+  }
+  
+  .admin-tab-btn {
+    width: 100%;
+    text-align: center;
+    border-bottom: none;
+    border-left: 3px solid transparent;
+  }
+  
+  .admin-tab-btn.active {
+    border-left-color: #3498db;
+  }
+  
+  .chart-container {
+    padding: 15px;
+  }
+  
+  .chart-container h3 {
+    font-size: 14px;
+  }
+}
