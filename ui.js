@@ -145,7 +145,7 @@ function renderMissingDays() {
   container.style.display = 'block';
   container.innerHTML = `
     <h3>⚠️ Пропущенные дни: ${missing.length}</h3>
-    <p>Вы можете ввести данные за эти дни. Будьте внимательны, данные не изменяются.</p>
+    <p>Вы можете ввести данные за эти дни. Будьте внимательны, данные не изменяются!</p>
     <div class="missing-days-list">
       ${missing.slice(0, 10).map(dateKey => `
         <button class="missing-day-btn" data-date="${dateKey}">
@@ -192,7 +192,7 @@ function openDayInputDialog(dateKey) {
   );
   
   const water = prompt(
-    'Вода. Введите значение от -2 до 2 (0 = <250мл, 1 = 250-500мл, 2 = 500-750мл, 3 = 750-1000мл, 4 = 1-1.5л, 5 = 1.5-2л, 6 = >2л):',
+    'Вода. Введите значение от 0 до 6 (0 = <250мл, 1 = 250-500мл, 2 = 500-750мл, 3 = 750-1000мл, 4 = 1-1.5л, 5 = 1.5-2л, 6 = >2л):',
     entry ? entry.water : '3'
   );
   
