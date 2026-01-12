@@ -526,3 +526,261 @@ body {
         grid-template-columns: 1fr;
     }
 }
+/* =====================================================
+   ДОПОЛНИТЕЛЬНЫЕ СТИЛИ ДЛЯ ui-v4.7-NEW-SUMMARY
+   Добавить в конец styles.css или создать отдельный файл
+   ===================================================== */
+
+/* Контейнер для новых блоков Сводки */
+#summary-blocks {
+    margin-bottom: 2rem;
+}
+
+.summary-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.summary-col {
+    min-width: 0; /* Для корректного wrap */
+}
+
+.summary-block {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.summary-block h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font-size: 1.3rem;
+    color: #333;
+}
+
+/* ===== БЛОК "СЕГОДНЯ" ===== */
+
+.today-block {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.today-block h3 {
+    color: white;
+}
+
+.today-checklist {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.checklist-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.8rem;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    backdrop-filter: blur(10px);
+}
+
+.row-label {
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.95);
+    font-size: 0.95rem;
+}
+
+.row-value {
+    font-weight: 600;
+    color: white;
+    text-align: right;
+}
+
+/* Прогресс-бар внутри блока "Сегодня" */
+.progress-bar-mini {
+    width: 100%;
+    height: 8px;
+    background-color: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    margin-top: 4px;
+    overflow: hidden;
+}
+
+.progress-bar-mini > div {
+    height: 100%;
+    transition: width 0.3s ease;
+    border-radius: 4px;
+}
+
+/* ===== БЛОК "СТАТИСТИКА" ===== */
+
+.statistics-block {
+    background: white;
+    border: 2px solid #e0e0e0;
+}
+
+.stat-period {
+    margin-bottom: 1rem;
+    font-size: 1.05rem;
+    color: #555;
+    padding: 0.8rem;
+    background: #f0f0f0;
+    border-radius: 6px;
+    text-align: center;
+}
+
+.statistics-grid {
+    display: grid;
+    gap: 0.8rem;
+}
+
+.stat-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.8rem;
+    padding: 0.8rem;
+    background: #f9f9f9;
+    border-radius: 6px;
+    border-left: 3px solid #667eea;
+}
+
+.stat-icon {
+    font-size: 1.5rem;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.stat-content {
+    flex: 1;
+}
+
+.stat-label {
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 0.3rem;
+    font-size: 0.9rem;
+}
+
+.stat-value {
+    color: #333;
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+/* ===== ВИЗУАЛИЗАЦИЯ ===== */
+
+/* Капли воды */
+.water-drops {
+    font-size: 1.1rem;
+    letter-spacing: 2px;
+}
+
+.water-label {
+    margin-left: 0.5rem;
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+/* Кружки питания */
+.nutrition-circles {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 0.3rem;
+}
+
+.nutrition-label {
+    font-size: 0.85rem;
+    opacity: 0.9;
+}
+
+/* ===== МОБИЛЬНАЯ АДАПТАЦИЯ ===== */
+
+@media (max-width: 768px) {
+    .summary-row {
+        grid-template-columns: 1fr;
+    }
+
+    .summary-block {
+        padding: 1.2rem;
+    }
+
+    .summary-block h3 {
+        font-size: 1.15rem;
+    }
+
+    .checklist-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .row-value {
+        text-align: left;
+        width: 100%;
+    }
+
+    .statistics-grid {
+        gap: 0.6rem;
+    }
+
+    .stat-item {
+        padding: 0.7rem;
+    }
+}
+
+@media (max-width: 480px) {
+    #summary-blocks {
+        margin-bottom: 1.5rem;
+    }
+
+    .summary-row {
+        gap: 1rem;
+    }
+
+    .summary-block {
+        padding: 1rem;
+    }
+
+    .checklist-row {
+        padding: 0.6rem;
+    }
+
+    .stat-icon {
+        font-size: 1.3rem;
+    }
+}
+
+/* ===== ТЁМНАЯ ТЕМА (опционально) ===== */
+
+@media (prefers-color-scheme: dark) {
+    .summary-block {
+        background: #2c2c2c;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    .statistics-block {
+        background: #2c2c2c;
+        border-color: #444;
+    }
+
+    .stat-item {
+        background: #363636;
+        border-left-color: #667eea;
+    }
+
+    .stat-period {
+        background: #363636;
+        color: #ccc;
+    }
+
+    .stat-label {
+        color: #ccc;
+    }
+
+    .stat-value {
+        color: #eee;
+    }
+}
