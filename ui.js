@@ -145,7 +145,7 @@ function renderMissingDays() {
   container.style.display = 'block';
   container.innerHTML = `
     <h3>⚠️ Пропущенные дни: ${missing.length}</h3>
-    <p>Вы можете ввести данные за эти дни:</p>
+    <p>Вы можете ввести данные за эти дни. Будьие внимательны, эти данные нельзя будет изменить.</p>
     <div class="missing-days-list">
       ${missing.slice(0, 10).map(dateKey => `
         <button class="missing-day-btn" data-date="${dateKey}">
@@ -182,17 +182,17 @@ function openDayInputDialog(dateKey) {
   
   if (treadmillSteps === null) return;
   
-  const morningExercise = confirm('Была зарядка?');
-  const workout = confirm('Была тренировка?');
-  const abs = confirm('Пресс был сделан?');
+  const morningExercise = confirm('Была зарядка? Ок - если сделана; Отмена - если отсутствовала');
+  const workout = confirm('Была тренировка? Ок - если сделана; Отмена - если отсутствовала');
+  const abs = confirm('Пресс был сделан? Ок - если сделан; Отмена - если не сделан');
   
   const nutrition = prompt(
-    'Питание (-2 = сильное недоедание, -1 = небольшое недоедание, 0 = норма, 1 = небольшое переедание, 2 = сильное переедание):',
+    'Питание: введите значение от -2 до 2 (-2 = сильное НЕдоедание, -1 = небольшое НЕдоедание, 0 = НОРМА, 1 = небольшое ПЕРЕедание, 2 = сильное ПЕРЕедание)',
     entry ? entry.nutrition : '0'
   );
   
   const water = prompt(
-    'Вода (0 = <250мл, 1 = 250-500мл, 2 = 500-750мл, 3 = 750-1000мл, 4 = 1-1.5л, 5 = 1.5-2л, 6 = >2л):',
+    'Вода: : введите значение от 0 до 6 (0 = <250мл, 1 = 250-500мл, 2 = 500-750мл, 3 = 750-1000мл, 4 = 1-1.5л, 5 = 1.5-2л, 6 = >2л):',
     entry ? entry.water : '3'
   );
   
