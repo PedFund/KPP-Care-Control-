@@ -70,6 +70,11 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('today-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     
+    // ✅ НОВЫЕ ПОЛЯ: СОН
+    const bedTime = document.getElementById('input-bed-time').value;
+    const wakeTime = document.getElementById('input-wake-time').value;
+    const sleepDuration = calculateSleepDuration(bedTime, wakeTime);
+    
     const data = {
       totalSteps: document.getElementById('input-total-steps').value,
       treadmillSteps: document.getElementById('input-treadmill-steps').value,
@@ -77,7 +82,12 @@ document.addEventListener('DOMContentLoaded', () => {
       workout: document.getElementById('input-workout').checked,
       abs: document.getElementById('input-abs').checked,
       nutrition: document.getElementById('input-nutrition').value,
-      water: document.getElementById('input-water').value
+      water: document.getElementById('input-water').value,
+      
+      // ✅ СОН
+      bedTime: bedTime || null,
+      wakeTime: wakeTime || null,
+      sleepDuration: sleepDuration || 0
     };
     
     const btn = e.target.querySelector('button');
@@ -89,4 +99,3 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.disabled = false;
     btn.textContent = 'Сохранить';
   });
-});
