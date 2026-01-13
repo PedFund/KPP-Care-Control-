@@ -8,6 +8,26 @@
     <link rel="stylesheet" href="styles.css">
     <!-- Стили админ-панели -->
     <link rel="stylesheet" href="admin-styles.css">
+    <style>
+    .admin-overview-grid {
+      display: grid !important;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)) !important;
+      gap: 20px !important;
+      padding: 20px !important;
+    }
+    
+    @media (min-width: 1200px) {
+      .admin-overview-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+      }
+    }
+    
+    @media (min-width: 1600px) {
+      .admin-overview-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+      }
+    }
+    </style>
 </head>
 <body>
     <div id="app">
