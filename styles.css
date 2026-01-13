@@ -461,7 +461,9 @@ body {
 
 .users-list {
     display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
     gap: 20px;
+    padding: 20px;
 }
 
 /* === Адаптивность === */
@@ -486,7 +488,28 @@ body {
     .form-row {
         grid-template-columns: 1fr;
     }
+    
+    /* ✅ НОВОЕ: Адаптивность для админ-панели */
+    .users-list {
+        grid-template-columns: 1fr;
+        padding: 10px;
+    }
 }
+
+/* ✅ НОВОЕ: Средние экраны (2 колонки) */
+@media (min-width: 1200px) {
+    .users-list {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* ✅ НОВОЕ: Большие экраны (3 колонки) */
+@media (min-width: 1600px) {
+    .users-list {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
 /* =====================================================
    ДОПОЛНИТЕЛЬНЫЕ СТИЛИ ДЛЯ ui-v4.7-NEW-SUMMARY
    Добавить в конец styles.css или создать отдельный файл
