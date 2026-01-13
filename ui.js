@@ -1905,63 +1905,76 @@ async function renderAdminOverview() {
   const users = await getAllUsers();
   
   const html = users.map(user => {
-    const absolute = getAbsoluteStats(user.history, 'totalSteps');
-    const currentGoal = getCurrentGoal(user, user.history);
-    const today = getDateKey();
-    const todayEntry = user.history[today];
-    const todaySteps = todayEntry ? todayEntry.totalSteps : 0;
-    
-    let totalMorningExercises = 0;
-    let totalAbs = 0;
-    let totalWorkouts = 0;
-    let totalDays = Object.keys(user.history).length;
-    
-    Object.values(user.history).forEach(entry => {
-      if (entry.morningExercise === 1) totalMorningExercises++;
-      if (entry.abs === 1) totalAbs++;
-      if (entry.workout === 1) totalWorkouts++;
-    });
+    // Считаем статистику для каждого пользователя
+    const stats = calculateStatistics(user.history);
     
     return `
       <div class="user-card">
         <h3>${user.name}</h3>
-        <div class="user-stats">
-          <div class="user-stat-item">
-            <div class="user-stat-label">Норма шагов</div>
-            <div class="user-stat-value">${currentGoal.toLocaleString('ru-RU')}</div>
+        
+        <p style="text-align: center; color: #7f8c8d; margin-bottom: 15px;">
+          Ведёт дневник: <strong>${stats.daysCount} ${stats.daysCount === 1 ? 'день' : stats.daysCount < 5 ? 'дня' : 'дней'}</strong>
+        </p>
+        
+        <div class="user-stats-compact">
+          
+          <!-- Шаги -->
+          <div class="stat-row">
+            <span class="stat-icon">🚶</span>
+            <span class="stat-label">Шагов:</span>
+            <span class="stat-value">
+              Всего: <strong>${stats.totalSteps.toLocaleString('ru-RU')}</strong><br>
+              Среднее: <strong>${stats.avgSteps.toLocaleString('ru-RU')}</strong> / день
+            </span>
           </div>
-          <div class="user-stat-item">
-            <div class="user-stat-label">Сегодня шагов</div>
-            <div class="user-stat-value">${todaySteps.toLocaleString('ru-RU')}</div>
+          
+          <!-- Зарядки -->
+          <div class="stat-row">
+            <span class="stat-icon">🧘</span>
+            <span class="stat-label">Зарядки:</span>
+            <span class="stat-value"><strong>${stats.morningCount}</strong> / ${stats.daysCount} дней (${stats.morningPercent}%)</span>
           </div>
-          <div class="user-stat-item">
-            <div class="user-stat-label">Дней записей</div>
-            <div class="user-stat-value">${totalDays}</div>
+          
+          <!-- Тренировки -->
+          <div class="stat-row">
+            <span class="stat-icon">🏋️</span>
+            <span class="stat-label">Тренировки:</span>
+            <span class="stat-value"><strong>${stats.workoutCount}</strong> / ${stats.daysCount} дней (${stats.workoutPercent}%)</span>
           </div>
-          <div class="user-stat-item">
-            <div class="user-stat-label">Мин шагов</div>
-            <div class="user-stat-value">${absolute.min.toLocaleString('ru-RU')}</div>
+          
+          <!-- Пресс -->
+          <div class="stat-row">
+            <span class="stat-icon">💪</span>
+            <span class="stat-label">Пресс:</span>
+            <span class="stat-value"><strong>${stats.absCount}</strong> / ${stats.daysCount} дней (${stats.absPercent}%)</span>
           </div>
-          <div class="user-stat-item">
-            <div class="user-stat-label">Макс шагов</div>
-            <div class="user-stat-value">${absolute.max.toLocaleString('ru-RU')}</div>
+          
+          <!-- Вода -->
+          <div class="stat-row">
+            <span class="stat-icon">💧</span>
+            <span class="stat-label">Вода:</span>
+            <span class="stat-value">Среднее: <strong>${stats.waterAvg}</strong></span>
           </div>
-          <div class="user-stat-item">
-            <div class="user-stat-label">Средние шаги</div>
-            <div class="user-stat-value">${absolute.avg.toLocaleString('ru-RU')}</div>
+          
+          <!-- Питание -->
+          <div class="stat-row">
+            <span class="stat-icon">🍽️</span>
+            <span class="stat-label">Питание:</span>
+            <span class="stat-value">Среднее: <strong>${stats.nutritionAvg}</strong> (${stats.nutritionText})</span>
           </div>
-          <div class="user-stat-item">
-            <div class="user-stat-label">Зарядки</div>
-            <div class="user-stat-value">${totalMorningExercises}</div>
-          </div>
-          <div class="user-stat-item">
-            <div class="user-stat-label">Тренировки</div>
-            <div class="user-stat-value">${totalWorkouts}</div>
-          </div>
-          <div class="user-stat-item">
-            <div class="user-stat-label">Прессы</div>
-            <div class="user-stat-value">${totalAbs}</div>
-          </div>
+          
+          <!-- ✅ СОН -->
+          ${stats.sleepStats ? `
+            <div class="stat-row">
+              <span class="stat-icon">🛏️</span>
+              <span class="stat-label">Сон:</span>
+              <span class="stat-value">
+                Спит в среднем: <strong style="color: ${stats.sleepStats.durationColor};">${stats.sleepStats.avgDurationText}</strong><br>
+                Ложится примерно в: <strong>${stats.sleepStats.avgBedTime}</strong>
+              </span>
+            </div>
+          ` : ''}
+          
         </div>
       </div>
     `;
