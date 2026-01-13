@@ -1478,9 +1478,40 @@ function renderChart(metricKey, chartData, title) {
   // Уничтожаем старый график если есть
   if (adminCharts[metricKey]) {
     adminCharts[metricKey].destroy();
-  }
-  
-  // Форматируем даты для отображения
+   }
+  // ✅ JITTER ПЛАГИН
+  const jitterPlugin = {
+    id: 'jitterPlugin',
+    afterDatasetsDraw(chart) {
+      if (metricKey !== 'morning' && metricKey !== 'workouts' && metricKey !== 'abs') {
+        return;
+      }
+      
+      const yScale = chart.scales.y;
+      if (!yScale) return;
+      
+      chart.data.datasets.forEach((dataset, datasetIndex) => {
+        const meta = chart.getDatasetMeta(datasetIndex);
+        if (!meta || !meta.data) return;
+        
+        const totalDatasets = chart.data.datasets.length;
+        const jitterRange = 0.15;
+        const jitterStep = totalDatasets > 1 ? (jitterRange * 2) / (totalDatasets - 1) : 0;
+        const jitterOffset = -jitterRange + (datasetIndex * jitterStep);
+        
+        meta.data.forEach((point, index) => {
+          const value = dataset.data[index];
+          if (value === 0 || value === 1) {
+            const baseY = yScale.getPixelForValue(value);
+            const pixelOffset = jitterOffset * 20;
+            point.y = baseY + pixelOffset;
+          }
+        });
+      });
+    }
+  };
+
+    // Форматируем даты для отображения
   const labels = chartData.dates.map(d => {
     const date = dateFromKey(d);
     return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
@@ -1652,7 +1683,11 @@ function renderChart(metricKey, chartData, title) {
   };
   
   // Создаём график
-  adminCharts[metricKey] = new Chart(ctx, config);
+  adminCharts[metricKey] = new Chart(ctx, {
+    ...config,
+    plugins: [jitterPlugin]  // ✅ Добавить!
+  });
+
 }
 
 // === ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ===
