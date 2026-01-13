@@ -1901,87 +1901,173 @@ async function renderAdminScreen() {
 
 // === ФУНКЦИЯ ОБЗОРА (СТАРАЯ ЛОГИКА) ===
 
+// ============================================
+// ФУНКЦИЯ: renderAdminOverview() — ОБЗОР АДМИН-ПАНЕЛИ
+// С ДОБАВЛЕНИЕМ ВЕСА (исходный / текущий / целевой)
+// ============================================
+
 async function renderAdminOverview() {
   const users = await getAllUsers();
-  
-  const html = users.map(user => {
-    // Считаем статистику для каждого пользователя
+
+  if (!users || users.length === 0) {
+    return '<div class="admin-error">Нет данных пользователей</div>';
+  }
+
+  const userCards = users.map(user => {
     const stats = calculateStatistics(user.history);
+    const daysCount = stats.daysCount;
     
+    // Склонение слова "день"
+    let daysText;
+    if (daysCount % 10 === 1 && daysCount % 100 !== 11) {
+      daysText = 'день';
+    } else if ([2, 3, 4].includes(daysCount % 10) && ![12, 13, 14].includes(daysCount % 100)) {
+      daysText = 'дня';
+    } else {
+      daysText = 'дней';
+    }
+
+    // ✅ ПОЛУЧЕНИЕ ДАННЫХ О ВЕСЕ
+    const startWeight = user.startWeight || null;
+    const targetWeight = user.targetWeight || null;
+    
+    // Текущий вес — последнее измерение из истории
+    let currentWeight = null;
+    if (user.history && Object.keys(user.history).length > 0) {
+      // Сортируем даты в обратном порядке
+      const sortedDates = Object.keys(user.history).sort((a, b) => b.localeCompare(a));
+      
+      // Ищем последнее непустое значение weight
+      for (const date of sortedDates) {
+        const entry = user.history[date];
+        if (entry.weight && !isNaN(parseFloat(entry.weight))) {
+          currentWeight = parseFloat(entry.weight);
+          break;
+        }
+      }
+    }
+
+    // Формирование строки веса
+    let weightHTML = '';
+    if (startWeight || currentWeight || targetWeight) {
+      const startText = startWeight ? `${startWeight} кг` : '<span style="color: #999;">—</span>';
+      const currentText = currentWeight ? `${currentWeight} кг` : '<span style="color: #999;">—</span>';
+      const targetText = targetWeight ? `${targetWeight} кг` : '<span style="color: #999;">—</span>';
+
+      weightHTML = `
+        <div class="stat-row">
+          <span class="stat-icon">⚖️</span>
+          <span class="stat-label">Вес:</span>
+          <span class="stat-value">
+            Исходный: ${startText}<br>
+            Текущий: ${currentText}<br>
+            Целевой: ${targetText}
+          </span>
+        </div>
+      `;
+    }
+
+    // Формирование статистики сна
+    let sleepHTML = '';
+    if (stats.sleepStats) {
+      const { durationColor, avgDurationText, avgBedTime } = stats.sleepStats;
+      sleepHTML = `
+        <div class="stat-row">
+          <span class="stat-icon">🛏️</span>
+          <span class="stat-label">Сон:</span>
+          <span class="stat-value">
+            Спите в среднем: <span style="color: ${durationColor}; font-weight: 500;">${avgDurationText}</span><br>
+            Ложитесь примерно в: ${avgBedTime}
+          </span>
+        </div>
+      `;
+    }
+
     return `
       <div class="user-card">
         <h3>${user.name}</h3>
-        
-        <p style="text-align: center; color: #7f8c8d; margin-bottom: 15px;">
-          Ведёт дневник: <strong>${stats.daysCount} ${stats.daysCount === 1 ? 'день' : stats.daysCount < 5 ? 'дня' : 'дней'}</strong>
+        <p style="color: #666; margin-bottom: 15px;">
+          Ведёте дневник: <strong>${daysCount}</strong> ${daysText}
         </p>
         
         <div class="user-stats-compact">
-          
-          <!-- Шаги -->
+          <!-- ШАГИ -->
           <div class="stat-row">
             <span class="stat-icon">🚶</span>
             <span class="stat-label">Шагов:</span>
             <span class="stat-value">
-              Всего: <strong>${stats.totalSteps.toLocaleString('ru-RU')}</strong><br>
-              Среднее: <strong>${stats.avgSteps.toLocaleString('ru-RU')}</strong> / день
+              Всего: ${stats.totalSteps.toLocaleString()}<br>
+              Среднее: ${stats.avgSteps} / день
             </span>
           </div>
-          
-          <!-- Зарядки -->
+
+          <!-- ЗАРЯДКИ -->
           <div class="stat-row">
             <span class="stat-icon">🧘</span>
             <span class="stat-label">Зарядки:</span>
-            <span class="stat-value"><strong>${stats.morningCount}</strong> / ${stats.daysCount} дней (${stats.morningPercent}%)</span>
+            <span class="stat-value">
+              ${stats.morningCount} / ${daysCount} дней (${stats.morningPercent}%)
+            </span>
           </div>
-          
-          <!-- Тренировки -->
+
+          <!-- ТРЕНИРОВКИ -->
           <div class="stat-row">
             <span class="stat-icon">🏋️</span>
             <span class="stat-label">Тренировки:</span>
-            <span class="stat-value"><strong>${stats.workoutCount}</strong> / ${stats.daysCount} дней (${stats.workoutPercent}%)</span>
+            <span class="stat-value">
+              ${stats.workoutCount} / ${daysCount} дней (${stats.workoutPercent}%)
+            </span>
           </div>
-          
-          <!-- Пресс -->
+
+          <!-- ПРЕСС -->
           <div class="stat-row">
             <span class="stat-icon">💪</span>
             <span class="stat-label">Пресс:</span>
-            <span class="stat-value"><strong>${stats.absCount}</strong> / ${stats.daysCount} дней (${stats.absPercent}%)</span>
+            <span class="stat-value">
+              ${stats.absCount} / ${daysCount} дней (${stats.absPercent}%)
+            </span>
           </div>
-          
-          <!-- Вода -->
+
+          <!-- ВОДА -->
           <div class="stat-row">
             <span class="stat-icon">💧</span>
             <span class="stat-label">Вода:</span>
-            <span class="stat-value">Среднее: <strong>${stats.waterAvg}</strong></span>
+            <span class="stat-value">Среднее: ${stats.waterAvg}</span>
           </div>
-          
-          <!-- Питание -->
+
+          <!-- ПИТАНИЕ -->
           <div class="stat-row">
             <span class="stat-icon">🍽️</span>
             <span class="stat-label">Питание:</span>
-            <span class="stat-value">Среднее: <strong>${stats.nutritionAvg}</strong> (${stats.nutritionText})</span>
+            <span class="stat-value">
+              Среднее: ${stats.nutritionAvg} (${stats.nutritionText})
+            </span>
           </div>
-          
-          <!-- ✅ СОН -->
-          ${stats.sleepStats ? `
-            <div class="stat-row">
-              <span class="stat-icon">🛏️</span>
-              <span class="stat-label">Сон:</span>
-              <span class="stat-value">
-                Спит в среднем: <strong style="color: ${stats.sleepStats.durationColor};">${stats.sleepStats.avgDurationText}</strong><br>
-                Ложится примерно в: <strong>${stats.sleepStats.avgBedTime}</strong>
-              </span>
-            </div>
-          ` : ''}
-          
+
+          <!-- ✅ ВЕС -->
+          ${weightHTML}
+
+          <!-- СОН -->
+          ${sleepHTML}
         </div>
       </div>
     `;
   }).join('');
-  
-  document.getElementById('users-list').innerHTML = html || '<p>Нет пользователей</p>';
+
+  return `
+    <div class="admin-overview-grid">
+      ${userCards}
+    </div>
+  `;
 }
+
+// ============================================
+// ЭКСПОРТ (если используется модульная система)
+// ============================================
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { renderAdminOverview };
+}
+
 
 // === НАСТРОЙКА ВКЛАДОК АДМИН-ПАНЕЛИ ===
 
