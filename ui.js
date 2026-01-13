@@ -118,9 +118,9 @@ function renderTodayBlock(todayEntry, currentGoal) {
   const today = getDateKey();
   const todaySteps = todayEntry ? todayEntry.totalSteps : 0;
   const treadmillSteps = todayEntry ? todayEntry.treadmillSteps : 0;
-  const morningExercise = todayEntry ? todayEntry.morningExercise === 1 : false;
-  const workout = todayEntry ? todayEntry.workout === 1 : false;
-  const abs = todayEntry ? todayEntry.abs === 1 : false;
+  const morningExercise = todayEntry ? (todayEntry.morningExercise === 1 || todayEntry.morningExercise === true) : false;
+  const workout = todayEntry ? (todayEntry.workout === 1 || todayEntry.workout === true) : false;
+  const abs = todayEntry ? (todayEntry.abs === 1 || todayEntry.abs === true) : false;
   const water = todayEntry ? todayEntry.water : 0;
   const nutrition = todayEntry ? todayEntry.nutrition : 0;
   
@@ -1359,23 +1359,23 @@ function prepareChartData(users) {
     // ИЗМЕНЕНИЕ 1 и 3: Для бинарных метрик (Да/Нет)
     // Если данных нет в истории, возвращаем null (не будет точки)
     // Если данные есть, возвращаем 1 или 0
-    const morning = dates.map(date => {
-      const entry = user.history[date];
-      if (!entry) return null; // Нет записи за день
-      return entry.morningExercise === 1 ? 1 : 0;
-    });
-    
-    const workouts = dates.map(date => {
-      const entry = user.history[date];
-      if (!entry) return null;
-      return entry.workout === 1 ? 1 : 0;
-    });
-    
-    const abs = dates.map(date => {
-      const entry = user.history[date];
-      if (!entry) return null;
-      return entry.abs === 1 ? 1 : 0;
-    });
+   const morning = dates.map(date => {
+    const entry = user.history[date];
+    if (!entry) return null;
+    return (entry.morningExercise === 1 || entry.morningExercise === true) ? 1 : 0;
+  });
+  
+  const workouts = dates.map(date => {
+    const entry = user.history[date];
+    if (!entry) return null;
+    return (entry.workout === 1 || entry.workout === true) ? 1 : 0;
+  });
+  
+  const abs = dates.map(date => {
+    const entry = user.history[date];
+    if (!entry) return null;
+    return (entry.abs === 1 || entry.abs === true) ? 1 : 0;
+  });
     
     const water = dates.map(date => {
       const entry = user.history[date];
