@@ -1906,11 +1906,17 @@ async function renderAdminScreen() {
 // С ДОБАВЛЕНИЕМ ВЕСА (исходный / текущий / целевой)
 // ============================================
 
+// ============================================
+// ФУНКЦИЯ: renderAdminOverview() — ОБЗОР АДМИН-ПАНЕЛИ
+// С ДОБАВЛЕНИЕМ ВЕСА (исходный / текущий / целевой)
+// ============================================
+
 async function renderAdminOverview() {
   const users = await getAllUsers();
 
   if (!users || users.length === 0) {
-    return '<div class="admin-error">Нет данных пользователей</div>';
+    document.getElementById('admin-content').innerHTML = '<div class="admin-error">Нет данных пользователей</div>';
+    return;
   }
 
   const userCards = users.map(user => {
@@ -2054,11 +2060,14 @@ async function renderAdminOverview() {
     `;
   }).join('');
 
-  return `
+  // ✅ ВСТАВЛЯЕМ HTML В DOM!
+  const html = `
     <div class="admin-overview-grid">
       ${userCards}
     </div>
   `;
+  
+  document.getElementById('admin-content').innerHTML = html;
 }
 
 // ============================================
