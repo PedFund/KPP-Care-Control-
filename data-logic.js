@@ -200,6 +200,10 @@ async function saveDayData(userId, dateKey, data, userData, history) {
       abs: data.abs ? 1 : 0,
       nutrition: parseInt(data.nutrition) || 0,
       water: parseInt(data.water) || 0,
+      // ✅ СОН
+      bedTime: data.bedTime || null,
+      wakeTime: data.wakeTime || null,
+      sleepDuration: parseInt(data.sleepDuration) || 0,
       timestamp: firebase.firestore.FieldValue.serverTimestamp()
     };
 
