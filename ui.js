@@ -343,64 +343,64 @@ function calculateStatistics(history) {
   };
 }
 
-// БЛОК 2: Рендер статистики (КОМПАКТНАЯ ВЕРСИЯ + СОН) - ИСПРАВЛЕНО
+// БЛОК 2: Рендер статистики (КОМПАКТНАЯ ВЕРСИЯ + СОН) - ИСПРАВЛЕНО v2
 function renderStatisticsBlock(stats) {
   const html = `
     <div class="summary-block statistics-block">
-      <h3 style="display: flex; align-items: center; gap: 8px; font-size: 1.2em; margin-bottom: 12px;">
+      <h3 style="display: flex; align-items: center; gap: 8px; font-size: 1.2em; margin-bottom: 12px; color: #2c3e50 !important;">
         📊 Ваша статистика
       </h3>
       
-      <p class="stat-period" style="margin-bottom: 15px; color: #2c3e50;">Ведёте дневник: <strong>${stats.daysCount} дней</strong></p>
+      <p class="stat-period" style="margin-bottom: 15px; color: #2c3e50 !important;">Ведёте дневник: <strong>${stats.daysCount} дней</strong></p>
       
       <div class="today-checklist" style="gap: 8px;">
         
         <!-- Шаги -->
-        <div class="checklist-row" style="color: #2c3e50;">
-          <span class="row-label">🚶 Шагов:</span>
-          <span class="row-value">
+        <div class="checklist-row">
+          <span class="row-label" style="color: #2c3e50 !important;">🚶 Шагов:</span>
+          <span class="row-value" style="color: #2c3e50 !important;">
             Всего: <strong>${stats.totalSteps.toLocaleString('ru-RU')}</strong><br>
             Среднее: <strong>${stats.avgSteps.toLocaleString('ru-RU')}</strong> / день
           </span>
         </div>
         
         <!-- Зарядки -->
-        <div class="checklist-row" style="color: #2c3e50;">
-          <span class="row-label">🧘 Зарядки:</span>
-          <span class="row-value"><strong>${stats.morningCount}</strong> / ${stats.daysCount} дней (${stats.morningPercent}%)</span>
+        <div class="checklist-row">
+          <span class="row-label" style="color: #2c3e50 !important;">🧘 Зарядки:</span>
+          <span class="row-value" style="color: #2c3e50 !important;"><strong>${stats.morningCount}</strong> / ${stats.daysCount} дней (${stats.morningPercent}%)</span>
         </div>
         
         <!-- Тренировки -->
-        <div class="checklist-row" style="color: #2c3e50;">
-          <span class="row-label">🏋️ Тренировки:</span>
-          <span class="row-value"><strong>${stats.workoutCount}</strong> / ${stats.daysCount} дней (${stats.workoutPercent}%)</span>
+        <div class="checklist-row">
+          <span class="row-label" style="color: #2c3e50 !important;">🏋️ Тренировки:</span>
+          <span class="row-value" style="color: #2c3e50 !important;"><strong>${stats.workoutCount}</strong> / ${stats.daysCount} дней (${stats.workoutPercent}%)</span>
         </div>
         
         <!-- Пресс -->
-        <div class="checklist-row" style="color: #2c3e50;">
-          <span class="row-label">💪 Пресс:</span>
-          <span class="row-value"><strong>${stats.absCount}</strong> / ${stats.daysCount} дней (${stats.absPercent}%)</span>
+        <div class="checklist-row">
+          <span class="row-label" style="color: #2c3e50 !important;">💪 Пресс:</span>
+          <span class="row-value" style="color: #2c3e50 !important;"><strong>${stats.absCount}</strong> / ${stats.daysCount} дней (${stats.absPercent}%)</span>
         </div>
         
         <!-- Вода -->
-        <div class="checklist-row" style="color: #2c3e50;">
-          <span class="row-label">💧 Вода:</span>
-          <span class="row-value">Среднее: <strong>${stats.waterAvg}</strong></span>
+        <div class="checklist-row">
+          <span class="row-label" style="color: #2c3e50 !important;">💧 Вода:</span>
+          <span class="row-value" style="color: #2c3e50 !important;">Среднее: <strong>${stats.waterAvg}</strong></span>
         </div>
         
         <!-- Питание -->
-        <div class="checklist-row" style="color: #2c3e50;">
-          <span class="row-label">🍽️ Питание:</span>
-          <span class="row-value">Среднее: <strong>${stats.nutritionAvg}</strong> (${stats.nutritionText})</span>
+        <div class="checklist-row">
+          <span class="row-label" style="color: #2c3e50 !important;">🍽️ Питание:</span>
+          <span class="row-value" style="color: #2c3e50 !important;">Среднее: <strong>${stats.nutritionAvg}</strong> (${stats.nutritionText})</span>
         </div>
         
         <!-- ✅ СОН -->
         ${stats.sleepStats ? `
-          <div class="checklist-row" style="color: #2c3e50;">
-            <span class="row-label">🛏️ Сон:</span>
-            <span class="row-value">
-              Спите в среднем: <strong style="color: ${stats.sleepStats.durationColor};">${stats.sleepStats.avgDurationText}</strong><br>
-              Ложитесь примерно в: <strong style="color: #2c3e50;">${stats.sleepStats.avgBedTime}</strong>
+          <div class="checklist-row">
+            <span class="row-label" style="color: #2c3e50 !important;">🛏️ Сон:</span>
+            <span class="row-value" style="color: #2c3e50 !important;">
+              Спите в среднем: <strong style="color: ${stats.sleepStats.durationColor} !important;">${stats.sleepStats.avgDurationText}</strong><br>
+              Ложитесь примерно в: <strong>${stats.sleepStats.avgBedTime}</strong>
             </span>
           </div>
         ` : ''}
@@ -411,6 +411,7 @@ function renderStatisticsBlock(stats) {
   
   return html;
 }
+
 
 // =====================================================
 // ОБНОВЛЕННАЯ ФУНКЦИЯ renderSummary()
