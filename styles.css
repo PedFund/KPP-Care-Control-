@@ -783,4 +783,38 @@ body {
     .stat-value {
         color: #eee;
     }
+.user-stats-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+    .stat-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 8px;
+      background: #f8f9fa;
+      border-radius: 6px;
+      font-size: 0.9em;
+    }
+    
+    .stat-row .stat-icon {
+      font-size: 1.2em;
+      flex-shrink: 0;
+    }
+    
+    .stat-row .stat-label {
+      color: #2c3e50;
+      font-weight: 500;
+      min-width: 100px;
+      flex-shrink: 0;
+    }
+    
+    .stat-row .stat-value {
+      color: #2c3e50;
+      flex: 1;
+      text-align: right;
+    }
+
 }
