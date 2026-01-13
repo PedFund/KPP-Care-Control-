@@ -20,7 +20,10 @@ let allUsersData = [];
 async function renderAdminScreen() {
   // Загружаем данные всех пользователей
   allUsersData = await getAllUsersWithDetails();
+  window.allUsers = allUsersData;
   
+  console.log('✅ Загружено пользователей:', allUsersData.length);
+  console.log('Пользователи:', allUsersData.map(u => u.name).join(', '));
   // Показываем экран
   showScreen('admin-screen');
   
