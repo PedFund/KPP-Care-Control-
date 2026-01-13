@@ -1379,35 +1379,44 @@ async function renderAdminDetailedView() {
   // Подготовка данных
   const chartData = prepareChartData(users);
   
-  // HTML для 6 графиков
-  const html = `
-    <div class="admin-charts-grid">
-      <div class="chart-container">
-        <h3>📊 Питание</h3>
-        <canvas id="chart-nutrition"></canvas>
-      </div>
-      <div class="chart-container">
-        <h3>🚶 Шаги</h3>
-        <canvas id="chart-steps"></canvas>
-      </div>
-      <div class="chart-container">
-        <h3>🌅 Зарядки</h3>
-        <canvas id="chart-morning"></canvas>
-      </div>
-      <div class="chart-container">
-        <h3>💪 Тренировки</h3>
-        <canvas id="chart-workouts"></canvas>
-      </div>
-      <div class="chart-container">
-        <h3>🏋️ Пресс</h3>
-        <canvas id="chart-abs"></canvas>
-      </div>
-      <div class="chart-container">
-        <h3>💧 Вода</h3>
-        <canvas id="chart-water"></canvas>
-      </div>
+  // HTML для 8 графиков
+const html = `
+  <div class="admin-charts-grid">
+    <div class="chart-container">
+      <h3>📊 Питание</h3>
+      <canvas id="chart-nutrition"></canvas>
     </div>
-  `;
+    <div class="chart-container">
+      <h3>🚶 Шаги</h3>
+      <canvas id="chart-steps"></canvas>
+    </div>
+    <div class="chart-container">
+      <h3>🌅 Зарядки</h3>
+      <canvas id="chart-morning"></canvas>
+    </div>
+    <div class="chart-container">
+      <h3>💪 Тренировки</h3>
+      <canvas id="chart-workouts"></canvas>
+    </div>
+    <div class="chart-container">
+      <h3>🏋️ Пресс</h3>
+      <canvas id="chart-abs"></canvas>
+    </div>
+    <div class="chart-container">
+      <h3>💧 Вода</h3>
+      <canvas id="chart-water"></canvas>
+    </div>
+    <!-- ✅ НОВЫЕ ГРАФИКИ СНА -->
+    <div class="chart-container">
+      <h3>🌙 Время укладывания</h3>
+      <canvas id="chart-bedtime"></canvas>
+    </div>
+    <div class="chart-container">
+      <h3>⏰ Длительность сна</h3>
+      <canvas id="chart-sleep-duration"></canvas>
+    </div>
+  </div>
+`;
   
   document.getElementById('admin-detailed-content').innerHTML = html;
   
@@ -1419,6 +1428,9 @@ async function renderAdminDetailedView() {
     renderChart('workouts', chartData, '💪 Тренировки');
     renderChart('abs', chartData, '🏋️ Пресс');
     renderChart('water', chartData, '💧 Вода');
+   // ✅ НОВЫЕ ГРАФИКИ СНА
+    renderChart('bedtime', chartData, '🌙 Время укладывания');
+    renderChart('sleepDuration', chartData, '⏰ Длительность сна');
   }, 100);
 }
 
@@ -1552,6 +1564,56 @@ function prepareChartData(users) {
       fill: false,
       spanGaps: true
     });
+    // ✅ НОВОЕ: Время укладывания (bedTime)
+// Конвертируем "23:30" → минуты от полуночи (23*60 + 30 = 1410)
+// Для отображения: если >= 20:00 (1200 мин), то показываем как есть
+// Если < 6:00 (360 мин), добавляем 1440 (следующий день)
+const bedtimeMinutes = dates.map(date => {
+  const entry = user.history[date];
+  if (!entry || !entry.bedTime) return null;
+  
+  const [hours, minutes] = entry.bedTime.split(':').map(Number);
+  let totalMinutes = hours * 60 + minutes;
+  
+  // Если время раннее утро (00:00 - 05:59), считаем следующим днём
+  if (totalMinutes < 360) {
+    totalMinutes += 1440;
+  }
+  
+  return totalMinutes;
+});
+
+// ✅ НОВОЕ: Длительность сна (в часах для удобства отображения)
+const sleepDurationHours = dates.map(date => {
+  const entry = user.history[date];
+  if (!entry || !entry.sleepDuration) return null;
+  return (entry.sleepDuration / 60).toFixed(1); // Минуты → часы
+});
+
+// Добавляем датасеты
+if (!datasets.bedtime) datasets.bedtime = [];
+if (!datasets.sleepDuration) datasets.sleepDuration = [];
+
+datasets.bedtime.push({
+  label: userName,
+  data: bedtimeMinutes,
+  borderColor: color,
+  backgroundColor: color + '50',
+  borderWidth: 2,
+  tension: 0,
+  fill: false,
+  spanGaps: false,
+  pointRadius: 5,
+  pointHoverRadius: 7
+});
+
+datasets.sleepDuration.push({
+  label: userName,
+  data: sleepDurationHours,
+  backgroundColor: color + '80',
+  borderColor: color,
+  borderWidth: 1
+});
   });
   
   return {
@@ -1613,9 +1675,9 @@ function renderChart(metricKey, chartData, title) {
   });
   
   // Конфигурация графика
-  const config = {
-    type: 'line',
-    data: {
+ const config = {
+    type: metricKey === 'sleepDuration' ? 'bar' : 'line',  // ✅ Столбчатый для длительности
+    data: { 
       labels: labels,
       datasets: chartData.datasets[metricKey]
     },
@@ -1699,25 +1761,100 @@ function renderChart(metricKey, chartData, title) {
         }
       },
       scales: {
-        x: {
-          display: true,
-          title: {
-            display: true,
-            text: 'Дата'
-          },
-          ticks: {
-            maxRotation: 45,
-            minRotation: 45,
-            autoSkip: true,
-            maxTicksLimit: 15
-          }
-        },
-        y: {
-          display: true,
-          title: {
-            display: true,
-            text: getYAxisLabel(metricKey)
-          },
+  x: {
+    display: true,
+    title: {
+      display: true,
+      text: 'Дата'
+    },
+    ticks: {
+      maxRotation: 45,
+      minRotation: 45,
+      autoSkip: true,
+      maxTicksLimit: 15
+    }
+  },
+  y: {
+    display: true,
+    title: {
+      display: true,
+      text: getYAxisLabel(metricKey)
+    },
+    beginAtZero: metricKey !== 'nutrition' && metricKey !== 'bedtime',
+    
+    // ✅ НОВОЕ: Специальные настройки для графиков сна
+    min: ['morning', 'workouts', 'abs'].includes(metricKey) ? -0.2 
+         : metricKey === 'water' ? 0 
+         : metricKey === 'nutrition' ? -2 
+         : metricKey === 'bedtime' ? 1200  // 20:00 = 1200 минут
+         : metricKey === 'sleepDuration' ? 0
+         : undefined,
+    
+    max: ['morning', 'workouts', 'abs'].includes(metricKey) ? 1.2 
+         : metricKey === 'water' ? 6 
+         : metricKey === 'nutrition' ? 2 
+         : metricKey === 'bedtime' ? 1560  // 02:00 следующего дня = 1560 минут
+         : metricKey === 'sleepDuration' ? 12
+         : undefined,
+    
+    ticks: {
+      stepSize: ['morning', 'workouts', 'abs'].includes(metricKey) ? 1 
+                : metricKey === 'water' ? 1 
+                : metricKey === 'nutrition' ? 1 
+                : metricKey === 'bedtime' ? 60  // Шаг 1 час
+                : metricKey === 'sleepDuration' ? 1
+                : undefined,
+      
+      autoSkip: metricKey === 'water' || metricKey === 'nutrition' ? false : true,
+      
+      callback: function(value) {
+        // ✅ НОВОЕ: Форматирование для времени укладывания
+        if (metricKey === 'bedtime') {
+          const hours = Math.floor(value / 60);
+          const minutes = value % 60;
+          const displayHours = hours >= 24 ? hours - 24 : hours;
+          return `${String(displayHours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+        }
+        
+        // ✅ НОВОЕ: Форматирование для длительности сна
+        if (metricKey === 'sleepDuration') {
+          return value + 'ч';
+        }
+        
+        // Остальные метрики (старый код)
+        if (metricKey === 'nutrition') {
+          const labels = {
+            '-2': 'Сильное недоедание',
+            '-1': 'Небольшое недоедание',
+            '0': 'По плану',
+            '1': 'Небольшое переедание',
+            '2': 'Переедание'
+          };
+          return labels[value] || value;
+        } else if (['morning', 'workouts', 'abs'].includes(metricKey)) {
+          if (value === 1) return 'Да';
+          if (value === 0) return 'Нет';
+          return '';
+        } else if (metricKey === 'water') {
+          const waterLabels = {
+            0: 'до 250',
+            1: 'до 500',
+            2: 'до 750',
+            3: 'до 1000',
+            4: 'до 1500',
+            5: 'до 2000',
+            6: '2000+'
+          };
+          return (waterLabels[value] || value) + ' мл';
+        } else if (metricKey === 'steps') {
+          return value.toLocaleString('ru-RU');
+        }
+        return value;
+      }
+    }
+  }
+}
+
           beginAtZero: metricKey !== 'nutrition',
           // Настройки для разных графиков:
           // Да-нет: от -0.2 до 1.2 (с паддингом)
@@ -1794,7 +1931,9 @@ function getYAxisLabel(metricKey) {
     'morning': 'Зарядка',
     'workouts': 'Тренировка',
     'abs': 'Пресс',
-    'water': 'Вода (мл)'
+    'water': 'Вода (мл)',
+    'bedtime': 'Время',           // ✅ НОВОЕ
+    'sleepDuration': 'Часы сна'   // ✅ НОВОЕ
   };
   return labels[metricKey] || '';
 }
