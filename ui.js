@@ -1675,8 +1675,8 @@ function renderChart(metricKey, chartData, title) {
   });
   
   // Конфигурация графика
- const config = {
-    type: metricKey === 'sleepDuration' ? 'bar' : 'line',  // ✅ Столбчатый для длительности
+  const config = {
+    type: metricKey === 'sleepDuration' ? 'bar' : 'line',
     data: { 
       labels: labels,
       datasets: chartData.datasets[metricKey]
@@ -1695,13 +1695,13 @@ function renderChart(metricKey, chartData, title) {
         legend: {
           display: true,
           position: 'top',
-          align: 'start',  // Выравнивание слева
+          align: 'start',
           labels: {
             usePointStyle: true,
-            padding: 8,      // Уменьшаем отступ для мобильных
-            boxWidth: 12,    // Меньше размер кружка
+            padding: 8,
+            boxWidth: 12,
             font: {
-              size: window.innerWidth < 768 ? 10 : 11  // Динамический размер
+              size: window.innerWidth < 768 ? 10 : 11
             }
           }
         },
@@ -1724,7 +1724,6 @@ function renderChart(metricKey, chartData, title) {
                 label += ': ';
               }
               
-              // Специальная обработка для разных метрик
               if (metricKey === 'nutrition') {
                 const value = context.parsed.y;
                 const labels = {
@@ -1738,7 +1737,6 @@ function renderChart(metricKey, chartData, title) {
               } else if (['morning', 'workouts', 'abs'].includes(metricKey)) {
                 label += context.parsed.y === 1 ? 'Выполнено ✓' : 'Не выполнено';
               } else if (metricKey === 'water') {
-                // Конвертируем из диапазонов в мл (для tooltip)
                 const waterValues = {
                   0: 'до 250 мл',
                   1: 'до 500 мл',
@@ -1761,107 +1759,105 @@ function renderChart(metricKey, chartData, title) {
         }
       },
       scales: {
-  x: {
-    display: true,
-    title: {
-      display: true,
-      text: 'Дата'
-    },
-    ticks: {
-      maxRotation: 45,
-      minRotation: 45,
-      autoSkip: true,
-      maxTicksLimit: 15
-    }
-  },
-  y: {
-    display: true,
-    title: {
-      display: true,
-      text: getYAxisLabel(metricKey)
-    },
-    beginAtZero: metricKey !== 'nutrition' && metricKey !== 'bedtime',
-    
-    // ✅ НОВОЕ: Специальные настройки для графиков сна
-    min: ['morning', 'workouts', 'abs'].includes(metricKey) ? -0.2 
-         : metricKey === 'water' ? 0 
-         : metricKey === 'nutrition' ? -2 
-         : metricKey === 'bedtime' ? 1200  // 20:00 = 1200 минут
-         : metricKey === 'sleepDuration' ? 0
-         : undefined,
-    
-    max: ['morning', 'workouts', 'abs'].includes(metricKey) ? 1.2 
-         : metricKey === 'water' ? 6 
-         : metricKey === 'nutrition' ? 2 
-         : metricKey === 'bedtime' ? 1560  // 02:00 следующего дня = 1560 минут
-         : metricKey === 'sleepDuration' ? 12
-         : undefined,
-    
-    ticks: {
-      stepSize: ['morning', 'workouts', 'abs'].includes(metricKey) ? 1 
-                : metricKey === 'water' ? 1 
-                : metricKey === 'nutrition' ? 1 
-                : metricKey === 'bedtime' ? 60  // Шаг 1 час
-                : metricKey === 'sleepDuration' ? 1
-                : undefined,
-      
-      autoSkip: metricKey === 'water' || metricKey === 'nutrition' ? false : true,
-      
-      callback: function(value) {
-        // ✅ НОВОЕ: Форматирование для времени укладывания
-        if (metricKey === 'bedtime') {
-          const hours = Math.floor(value / 60);
-          const minutes = value % 60;
-          const displayHours = hours >= 24 ? hours - 24 : hours;
-          return `${String(displayHours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+        x: {
+          display: true,
+          title: {
+            display: true,
+            text: 'Дата'
+          },
+          ticks: {
+            maxRotation: 45,
+            minRotation: 45,
+            autoSkip: true,
+            maxTicksLimit: 15
+          }
+        },
+        y: {
+          display: true,
+          title: {
+            display: true,
+            text: getYAxisLabel(metricKey)
+          },
+          beginAtZero: metricKey !== 'nutrition' && metricKey !== 'bedtime',
+          
+          min: ['morning', 'workouts', 'abs'].includes(metricKey) ? -0.2 
+               : metricKey === 'water' ? 0 
+               : metricKey === 'nutrition' ? -2 
+               : metricKey === 'bedtime' ? 1200
+               : metricKey === 'sleepDuration' ? 0
+               : undefined,
+          
+          max: ['morning', 'workouts', 'abs'].includes(metricKey) ? 1.2 
+               : metricKey === 'water' ? 6 
+               : metricKey === 'nutrition' ? 2 
+               : metricKey === 'bedtime' ? 1560
+               : metricKey === 'sleepDuration' ? 12
+               : undefined,
+          
+          ticks: {
+            stepSize: ['morning', 'workouts', 'abs'].includes(metricKey) ? 1 
+                      : metricKey === 'water' ? 1 
+                      : metricKey === 'nutrition' ? 1 
+                      : metricKey === 'bedtime' ? 60
+                      : metricKey === 'sleepDuration' ? 1
+                      : undefined,
+            
+            autoSkip: metricKey === 'water' || metricKey === 'nutrition' ? false : true,
+            
+            callback: function(value) {
+              if (metricKey === 'bedtime') {
+                const hours = Math.floor(value / 60);
+                const minutes = value % 60;
+                const displayHours = hours >= 24 ? hours - 24 : hours;
+                return `${String(displayHours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+              }
+              
+              if (metricKey === 'sleepDuration') {
+                return value + 'ч';
+              }
+              
+              if (metricKey === 'nutrition') {
+                const labels = {
+                  '-2': 'Сильное недоедание',
+                  '-1': 'Небольшое недоедание',
+                  '0': 'По плану',
+                  '1': 'Небольшое переедание',
+                  '2': 'Переедание'
+                };
+                return labels[value] || value;
+              } else if (['morning', 'workouts', 'abs'].includes(metricKey)) {
+                if (value === 1) return 'Да';
+                if (value === 0) return 'Нет';
+                return '';
+              } else if (metricKey === 'water') {
+                const waterLabels = {
+                  0: 'до 250',
+                  1: 'до 500',
+                  2: 'до 750',
+                  3: 'до 1000',
+                  4: 'до 1500',
+                  5: 'до 2000',
+                  6: '2000+'
+                };
+                return (waterLabels[value] || value) + ' мл';
+              } else if (metricKey === 'steps') {
+                return value.toLocaleString('ru-RU');
+              }
+              return value;
+            }
+          }
         }
-        
-        // ✅ НОВОЕ: Форматирование для длительности сна
-        if (metricKey === 'sleepDuration') {
-          return value + 'ч';
-        }
-        
-        // Остальные метрики (старый код)
-        if (metricKey === 'nutrition') {
-          const labels = {
-            '-2': 'Сильное недоедание',
-            '-1': 'Небольшое недоедание',
-            '0': 'По плану',
-            '1': 'Небольшое переедание',
-            '2': 'Переедание'
-          };
-          return labels[value] || value;
-        } else if (['morning', 'workouts', 'abs'].includes(metricKey)) {
-          if (value === 1) return 'Да';
-          if (value === 0) return 'Нет';
-          return '';
-        } else if (metricKey === 'water') {
-          const waterLabels = {
-            0: 'до 250',
-            1: 'до 500',
-            2: 'до 750',
-            3: 'до 1000',
-            4: 'до 1500',
-            5: 'до 2000',
-            6: '2000+'
-          };
-          return (waterLabels[value] || value) + ' мл';
-        } else if (metricKey === 'steps') {
-          return value.toLocaleString('ru-RU');
-        }
-        return value;
       }
     }
-  }
-}
-    
+  };
+  
   // Создаём график
   adminCharts[metricKey] = new Chart(ctx, {
     ...config,
-    plugins: [jitterPlugin]  // ✅ Добавить!
+    plugins: [jitterPlugin]
   });
-
 }
+
 
 // === ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ===
 
