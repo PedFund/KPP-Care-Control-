@@ -185,6 +185,13 @@ function renderTodayBlock(todayEntry, currentGoal) {
           <span class="row-value">${renderNutritionCircles(nutrition)}</span>
         </div>
         
+        <!-- ✅ СОН -->
+        ${renderSleepRow(
+          todayEntry ? todayEntry.bedTime : null,
+          todayEntry ? todayEntry.wakeTime : null,
+          todayEntry ? todayEntry.sleepDuration : 0
+        )}
+
       </div>
     </div>
   `;
@@ -257,6 +264,21 @@ function renderStatisticsBlock(stats) {
   const html = `
     <div class="summary-block statistics-block">
       <h3>📊 Ваша статистика</h3>
+      <style>
+        .summary-col:last-child .block h2 {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 1.2em;
+        margin-bottom: 12px;
+        }
+        .summary-col:last-child .block .stats-grid {
+          gap: 8px;
+        }
+        .summary-col:last-child .block .stat-item {
+          padding: 8px;
+        }
+      </style>
       <p class="stat-period">Ведёте дневник: <strong>${stats.daysCount} дней</strong></p>
       <div class="statistics-grid">
         
@@ -383,6 +405,9 @@ function renderSummary() {
     document.getElementById('input-workout').checked = todayEntry.workout === 1;
     document.getElementById('input-abs').checked = todayEntry.abs === 1;
     document.getElementById('input-nutrition').value = todayEntry.nutrition || 0;
+    // ✅ СОН
+    document.getElementById('input-bed-time').value = todayEntry.bedTime || '';
+    document.getElementById('input-wake-time').value = todayEntry.wakeTime || '';
     document.getElementById('input-water').value = todayEntry.water || 3;
   } else {
     document.getElementById('input-total-steps').value = '';
