@@ -2067,7 +2067,16 @@ async function renderAdminOverview() {
     </div>
   `;
   
-  document.getElementById('admin-content').innerHTML = html;
+ const container = document.getElementById('admin-tab-overview') 
+                  || document.getElementById('admin-content')
+                  || document.querySelector('.admin-overview-content')
+                  || document.querySelector('#admin-screen .admin-container');
+
+if (container) {
+  container.innerHTML = html;
+} else {
+  console.error('❌ Контейнер для админ-панели не найден!');
+}
 }
 
 // ============================================
