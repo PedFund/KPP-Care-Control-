@@ -464,45 +464,6 @@ body {
     gap: 20px;
 }
 
-.user-card {
-    background: var(--card-bg);
-    padding: 25px;
-    border-radius: 12px;
-    box-shadow: var(--shadow);
-}
-
-.user-card h3 {
-    font-size: 1.5em;
-    color: var(--primary);
-    margin-bottom: 15px;
-}
-
-.user-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 15px;
-    margin-top: 15px;
-}
-
-.user-stat-item {
-    padding: 15px;
-    background: var(--bg);
-    border-radius: 8px;
-    text-align: center;
-}
-
-.user-stat-label {
-    font-size: 0.85em;
-    color: var(--text-secondary);
-    margin-bottom: 5px;
-}
-
-.user-stat-value {
-    font-size: 1.5em;
-    font-weight: 700;
-    color: var(--primary);
-}
-
 /* === Адаптивность === */
 @media (max-width: 768px) {
     .tabs {
