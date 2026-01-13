@@ -1854,66 +1854,7 @@ function renderChart(metricKey, chartData, title) {
     }
   }
 }
-
-          beginAtZero: metricKey !== 'nutrition',
-          // Настройки для разных графиков:
-          // Да-нет: от -0.2 до 1.2 (с паддингом)
-          // Вода: от 0 до 6
-          // Питание: от -2 до 2
-          min: ['morning', 'workouts', 'abs'].includes(metricKey) ? -0.2 
-               : metricKey === 'water' ? 0 
-               : metricKey === 'nutrition' ? -2 
-               : undefined,
-          max: ['morning', 'workouts', 'abs'].includes(metricKey) ? 1.2 
-               : metricKey === 'water' ? 6 
-               : metricKey === 'nutrition' ? 2 
-               : undefined,
-          ticks: {
-            // Шаг 1 для да-нет, воды, питания
-            stepSize: ['morning', 'workouts', 'abs'].includes(metricKey) ? 1 
-                      : metricKey === 'water' ? 1 
-                      : metricKey === 'nutrition' ? 1 
-                      : undefined,
-            // Не пропускать метки для воды и питания
-            autoSkip: metricKey === 'water' || metricKey === 'nutrition' ? false : true,
-            callback: function(value) {
-              if (metricKey === 'nutrition') {
-                const labels = {
-                  '-2': 'Сильное недоедание',
-                  '-1': 'Небольшое недоедание',
-                  '0': 'По плану',
-                  '1': 'Небольшое переедание',
-                  '2': 'Переедание'
-                };
-                return labels[value] || value;
-              } else if (['morning', 'workouts', 'abs'].includes(metricKey)) {
-                // Да-Нет графики: показываем только 0 и 1
-                if (value === 1) return 'Да';
-                if (value === 0) return 'Нет';
-                return '';  // Скрываем промежуточные значения
-              } else if (metricKey === 'water') {
-                // Подписи воды: до 250мл, до 500мл, до 750мл, до 1л, до 1.5л, до 2л, 2л+
-                const waterLabels = {
-                  0: 'до 250',
-                  1: 'до 500',
-                  2: 'до 750',
-                  3: 'до 1000',
-                  4: 'до 1500',
-                  5: 'до 2000',
-                  6: '2000+'
-                };
-                return (waterLabels[value] || value) + ' мл';
-              } else if (metricKey === 'steps') {
-                return value.toLocaleString('ru-RU');
-              }
-              return value;
-            }
-          }
-        }
-      }
-    }
-  };
-  
+    
   // Создаём график
   adminCharts[metricKey] = new Chart(ctx, {
     ...config,
