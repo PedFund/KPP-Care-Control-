@@ -112,6 +112,37 @@ function renderNutritionCircles(nutritionValue) {
   
   return `<div class="nutrition-circles">${circles}</div><div class="nutrition-label">${label}</div>`;
 }
+  // === ОТОБРАЖЕНИЕ СНА ===
+  function renderSleepRow(bedTime, wakeTime, sleepDuration) {
+    if (!bedTime || !wakeTime || !sleepDuration) {
+      return `
+        <div class="checklist-item">
+          🛏️ Сон: <span style="color: #999;">—</span>
+        </div>
+      `;
+    }
+  
+    const hours = Math.floor(sleepDuration / 60);
+    const minutes = sleepDuration % 60;
+    const durationText = minutes > 0 
+      ? `${hours}ч ${minutes}мин` 
+      : `${hours}ч`;
+  
+    // Цвет по длительности
+    let color = '#999';
+    if (sleepDuration < 420) color = '#ef4444';       // <7ч красный
+    else if (sleepDuration <= 480) color = '#10b981'; // 7-8ч зеленый
+    else color = '#3b82f6';                           // >8ч синий
+  
+    return `
+      <div class="checklist-item">
+        🛏️ Сон: 
+        <span style="color: ${color}; font-weight: 500;">
+          ${bedTime} → ${wakeTime} (${durationText})
+        </span>
+      </div>
+    `;
+  }
 
 // БЛОК 1: "Сегодня" (детальный чек-лист)
 function renderTodayBlock(todayEntry, currentGoal) {
