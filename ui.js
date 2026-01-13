@@ -1413,7 +1413,7 @@ const html = `
     </div>
     <div class="chart-container">
       <h3>⏰ Длительность сна</h3>
-      <canvas id="chart-sleep-duration"></canvas>
+      <canvas id="chart-sleepDuration"></canvas>
     </div>
   </div>
 `;
