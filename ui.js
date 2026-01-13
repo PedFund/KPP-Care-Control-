@@ -1899,13 +1899,6 @@ async function renderAdminScreen() {
   await renderAdminOverview();
 }
 
-// === ФУНКЦИЯ ОБЗОРА (СТАРАЯ ЛОГИКА) ===
-
-// ============================================
-// ФУНКЦИЯ: renderAdminOverview() — ОБЗОР АДМИН-ПАНЕЛИ
-// С ДОБАВЛЕНИЕМ ВЕСА (исходный / текущий / целевой)
-// ============================================
-
 // ============================================
 // ФУНКЦИЯ: renderAdminOverview() — ОБЗОР АДМИН-ПАНЕЛИ
 // С ДОБАВЛЕНИЕМ ВЕСА (исходный / текущий / целевой)
@@ -1982,8 +1975,8 @@ async function renderAdminOverview() {
           <span class="stat-icon">🛏️</span>
           <span class="stat-label">Сон:</span>
           <span class="stat-value">
-            Спите в среднем: <span style="color: ${durationColor}; font-weight: 500;">${avgDurationText}</span><br>
-            Ложитесь примерно в: ${avgBedTime}
+            Спит в среднем: <span style="color: ${durationColor}; font-weight: 500;">${avgDurationText}</span><br>
+            Ложится примерно в: ${avgBedTime}
           </span>
         </div>
       `;
@@ -1993,7 +1986,7 @@ async function renderAdminOverview() {
       <div class="user-card">
         <h3>${user.name}</h3>
         <p style="color: #666; margin-bottom: 15px;">
-          Ведёте дневник: <strong>${daysCount}</strong> ${daysText}
+          Ведёт дневник: <strong>${daysCount}</strong> ${daysText}
         </p>
         
         <div class="user-stats-compact">
