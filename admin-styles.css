@@ -423,17 +423,36 @@
 
 /* === СЕТКА ПОЛЬЗОВАТЕЛЕЙ (для вкладки Обзор) === */
 
-.users-grid {
+.users-grid,
+.users-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
   gap: 20px;
+  padding: 20px;
 }
 
 @media (max-width: 768px) {
-  .users-grid {
+  .users-grid,
+  .users-list {
     grid-template-columns: 1fr;
+    padding: 10px;
   }
 }
+
+@media (min-width: 1200px) {
+  .users-grid,
+  .users-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1600px) {
+  .users-grid,
+  .users-list {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
 
 /* === КАРТОЧКА ПОЛЬЗОВАТЕЛЯ === */
 
