@@ -294,7 +294,9 @@ function calculateStatistics(history) {
 function renderStatisticsBlock(stats) {
   const html = `
     <div class="summary-block statistics-block">
-      <h3>📊 Ваша статистика</h3>
+      <h3 style="display: flex; align-items: center; gap: 8px; font-size: 1.2em; margin-bottom: 12px;">
+        📊 Ваша статистика
+      </h3>
       <style>
         .summary-col:last-child .block h2 {
         display: flex;
@@ -448,6 +450,9 @@ function renderSummary() {
     document.getElementById('input-abs').checked = false;
     document.getElementById('input-nutrition').value = 0;
     document.getElementById('input-water').value = 3;
+    // ✅ СОН (сброс)
+    document.getElementById('input-bed-time').value = '';
+    document.getElementById('input-wake-time').value = '';
   }
 }
 
