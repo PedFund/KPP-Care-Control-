@@ -2133,19 +2133,25 @@ function setupAdminTabs() {
 
 // === ВКЛАДКА СОН ===
 
-    function renderSleepHistory() {
+   function renderSleepHistory() {
       const weekStats = getWeeklySleepStats(currentHistory);
       const monthStats = getMonthlySleepStats(currentHistory);
       
       // Суммарная статистика
-      const totalRecords = Object.values(currentHistory).filter(d => d.sleepDuration).length;
-      const avgDuration = totalRecords > 0 
-        ? Object.values(currentHistory).reduce((sum, d) => sum + (d.sleepDuration || 0), 0) / totalRecords
-        : 0;
+      const recordsWithSleep = Object.values(currentHistory).filter(d => d.bedTime && d.wakeTime);
+      const totalRecords = recordsWithSleep.length;
+      
+      let avgDuration = 0;
+      if (totalRecords > 0) {
+        const totalHours = recordsWithSleep.reduce((sum, d) => {
+          return sum + calculateSleepDuration(d.bedTime, d.wakeTime);
+        }, 0);
+        avgDuration = totalHours / totalRecords;
+      }
       
       document.getElementById('sleep-total-records').textContent = totalRecords;
       document.getElementById('sleep-average').textContent = 
-        totalRecords > 0 ? getAvgSleepStatus(avgDuration) : 'По плану';
+        totalRecords > 0 ? getAvgSleepStatus(avgDuration) : 'Нет данных';
       
       // Последние 7 дней
       const lastWeekHtml = weekStats.map(day => {
