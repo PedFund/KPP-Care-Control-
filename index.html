@@ -199,28 +199,25 @@
                 <!-- После секции tab-nutrition добавь: -->
 
                 <!-- Вкладка Сон -->
-                <section id="tab-sleep" class="tab-content">
-                  <div class="card">
-                    <h2>🛏️ История сна</h2>
-                    <div id="sleep-summary" class="summary-grid">
-                      <div class="summary-item">
-                        <span class="summary-label">Всего записей</span>
-                        <span class="summary-value" id="sleep-total-records">0</span>
+                    <section id="tab-sleep" class="tab-content">
+                      <div class="stats-header">
+                        <h3>🛏️ История сна</h3>
+                        <div class="stats-summary" id="sleep-stats"></div>
                       </div>
-                      <div class="summary-item">
-                        <span class="summary-label">Среднее</span>
-                        <span class="summary-value" id="sleep-average">По плану</span>
+                      
+                      <div class="history-container">
+                        <div class="history-section">
+                          <h4>Последние 7 дней</h4>
+                          <div id="sleep-last-week" class="history-grid"></div>
+                        </div>
+                        
+                        <div class="history-section">
+                          <h4>По неделям (с понедельника)</h4>
+                          <div id="sleep-by-weeks"></div>
+                        </div>
                       </div>
-                    </div>
-                    
-                    <h3>Последние 7 дней</h3>
-                    <div id="sleep-last-week" class="week-grid"></div>
-                    
-                    <h3>По неделям (с понедельника)</h3>
-                    <div id="sleep-by-weeks" class="weeks-container"></div>
-                  </div>
-                </section>
-
+                    </section>
+             
                 <!-- Вкладка: Измерения -->
                 <section id="tab-measurements" class="tab-content">
                     <div id="measurements-form"></div>
