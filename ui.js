@@ -2127,6 +2127,58 @@ function setupAdminTabs() {
   });
 }
 
+// === ВКЛАДКА СОН ===
+
+function renderSleepHistory() {
+  const weekStats = getWeeklySleepStats(currentHistory);
+  const monthStats = getMonthlySleepStats(currentHistory);
+  
+  // Суммарная статистика
+  const totalRecords = Object.values(currentHistory).filter(d => d.sleepDuration).length;
+  const avgDuration = totalRecords > 0 
+    ? Object.values(currentHistory).reduce((sum, d) => sum + (d.sleepDuration || 0), 0) / totalRecords
+    : 0;
+  
+  document.getElementById('sleep-total-records').textContent = totalRecords;
+  document.getElementById('sleep-average').textContent = 
+    totalRecords > 0 ? getAvgSleepStatus(avgDuration) : 'По плану';
+  
+  // Последние 7 дней
+  const lastWeekHtml = weekStats.map(day => `
+    <div class="day-card ${day.status === 'По плану' ? 'status-ok' : (day.status === 'Сильное недоедание' ? 'status-critical' : 'status-warning')}">
+      <div class="day-date">${day.displayDate}</div>
+      <div class="day-status">${day.status}</div>
+      ${day.duration ? `
+        <div class="day-details">
+          <div>🛏️ ${day.bedTime}</div>
+          <div>⏰ ${day.wakeTime}</div>
+          <div>⏱️ ${day.duration.toFixed(1)}ч</div>
+        </div>
+      ` : ''}
+    </div>
+  `).join('');
+  
+  document.getElementById('sleep-last-week').innerHTML = lastWeekHtml;
+  
+  // По неделям
+  const weeksHtml = monthStats.map(week => `
+    <div class="week-card ${week.status === 'По плану' ? 'status-ok' : 'status-warning'}">
+      <div class="week-header">
+        <span class="week-dates">${week.dateRange}</span>
+      </div>
+      <div class="week-status">${week.status}</div>
+      <div class="week-details">
+        <div>По плану: ${week.records.filter(r => r.duration >= 7 && r.duration <= 9).length}</div>
+        <div>Небольшое передание: ${week.records.filter(r => r.duration < 7 || r.duration > 9).length}</div>
+        <div>Среднее: ${week.avgDuration.toFixed(1)}ч</div>
+      </div>
+    </div>
+  `).join('');
+  
+  document.getElementById('sleep-by-weeks').innerHTML = weeksHtml || 
+    '<p class="empty-state">Нет данных за последние недели</p>';
+}
+
 // === ЭКСПОРТ ФУНКЦИЙ ===
 // Эти функции нужно добавить в глобальную область видимости или модуль
 
