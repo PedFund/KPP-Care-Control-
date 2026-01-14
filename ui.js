@@ -2130,122 +2130,86 @@ function setupAdminTabs() {
     await renderAdminDetailedView();
   });
 }
-
-// === ВКЛАДКА СОН ===
-
-// Вспомогательная функция форматирования длительности сна
-    function formatSleepDuration(minutes) {
-      if (!minutes) return '—';
-      const hours = Math.floor(minutes / 60);
-      const mins = minutes % 60;
-      return mins > 0 ? `${hours}ч ${mins}мин` : `${hours}ч`;
+// === ИСТОРИЯ СНА ===
+function renderSleepHistory() {
+  const weekStats = getWeeklySleepStats(currentHistory);
+  const monthStats = getMonthlySleepStats(currentHistory);
+  
+  // Подсчёт общей статистики
+  let totalRecords = 0;
+  let totalDuration = 0;
+  
+  Object.values(currentHistory).forEach(entry => {
+    if (entry.bedTime && entry.wakeTime && entry.sleepDuration) {
+      totalRecords++;
+      totalDuration += entry.sleepDuration;
+    }
+  });
+  
+  const avgDuration = totalRecords > 0 ? totalDuration / totalRecords : 0;
+  const avgHours = Math.floor(avgDuration / 60);
+  const avgMinutes = Math.round(avgDuration % 60);
+  
+  // Статистика сверху
+  document.getElementById('sleep-stats').innerHTML = `
+    <div class="stat-item">
+      <span class="stat-label">Всего записей</span>
+      <span class="stat-value">${totalRecords}</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">Среднее</span>
+      <span class="stat-value">${totalRecords > 0 ? `${avgHours}ч ${avgMinutes}мин` : '—'}</span>
+    </div>
+  `;
+  
+  // Последние 7 дней
+  const weekHTML = weekStats.map(day => {
+    if (!day.duration) {
+      return `
+        <div class="history-item">
+          <div class="history-date">${day.displayDate}</div>
+          <div class="history-value" style="color: #999;">—</div>
+        </div>
+      `;
     }
     
-    // Статус сна по средней длительности (в минутах)
-    function getAvgSleepStatus(minutes) {
-      if (minutes < 420) return 'Недосыпание';        // < 7ч
-      if (minutes <= 480) return 'По плану';          // 7-8ч
-      return 'Пересыпание';                           // > 8ч
-    }
+    const hours = Math.floor(day.duration / 60);
+    const minutes = Math.round(day.duration % 60);
+    const className = day.status === 'По плану' ? 'success' : day.status === 'Недосыпание' ? 'danger' : 'warning';
     
-    function renderSleepHistory() {
-      const last7Days = getLast7DaysStats(currentHistory, 'sleep');
-      const weekStats = getWeeklySleepStats(currentHistory);
-      const monthStats = getMonthlySleepStats(currentHistory);
-      
-      // Суммарная статистика
-      const recordsWithSleep = Object.values(currentHistory).filter(d => d.bedTime && d.wakeTime);
-      const totalRecords = recordsWithSleep.length;
-      
-      let avgDuration = 0;
-      if (totalRecords > 0) {
-        const totalMinutes = recordsWithSleep.reduce((sum, d) => {
-          return sum + calculateSleepDuration(d.bedTime, d.wakeTime);
-        }, 0);
-        avgDuration = totalMinutes / totalRecords;
-      }
-      
-      document.getElementById('sleep-total-records').textContent = totalRecords;
-      document.getElementById('sleep-average').textContent = 
-        totalRecords > 0 ? getAvgSleepStatus(avgDuration) : 'Нет данных';
+    return `
+      <div class="history-item ${className}">
+        <div class="history-date">${day.displayDate}</div>
+        <div class="history-value">${hours}ч ${minutes > 0 ? minutes + 'мин' : ''}</div>
+        <div style="font-size:0.75em;color:#666;">
+          🛏️ ${day.bedTime} → ⏰ ${day.wakeTime}<br>
+          ⏱️ ${hours}ч ${minutes > 0 ? minutes + 'мин' : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  document.getElementById('sleep-last-week').innerHTML = weekHTML;
+  
+  // По неделям
+  const monthHTML = monthStats.map(week => {
+    const hours = Math.floor(week.avgDuration / 60);
+    const minutes = Math.round(week.avgDuration % 60);
+    const className = week.status === 'По плану' ? 'success' : week.status === 'Недосыпание' ? 'danger' : 'warning';
     
-      // === ПОСЛЕДНИЕ 7 ДНЕЙ ===
-      let html = '';
-      
-      if (last7Days.length > 0) {
-        html += `
-          <div class="history-section">
-            <h4>Последние 7 дней</h4>
-            <div class="history-grid">
-              ${last7Days.map(item => {
-                const entry = currentHistory[item.date];
-                
-                if (!entry || !entry.bedTime || !entry.wakeTime) {
-                  return `
-                    <div class="history-item">
-                      <div class="history-date">
-                        ${getDayName(item.date)}, ${formatDate(item.date).split(' ')[0]}
-                      </div>
-                      <div class="history-value">Нет данных</div>
-                    </div>
-                  `;
-                }
-                
-                const duration = entry.sleepDuration || calculateSleepDuration(entry.bedTime, entry.wakeTime);
-                const status = getAvgSleepStatus(duration);
-                const className = status === 'По плану' ? 'success' : status === 'Недосыпание' ? 'warning' : 'danger';
-                
-                return `
-                  <div class="history-item ${className}">
-                    <div class="history-date">
-                      ${getDayName(item.date)}, ${formatDate(item.date).split(' ')[0]}
-                    </div>
-                    <div class="history-value" style="font-size: 0.9em;">
-                      ${status}
-                    </div>
-                    <div style="font-size: 0.75em; color: #666; margin-top: 4px;">
-                      🛏️ ${entry.bedTime}<br>
-                      ⏰ ${entry.wakeTime}<br>
-                      ⏱️ ${formatSleepDuration(duration)}
-                    </div>
-                  </div>
-                `;
-              }).join('')}
-            </div>
-          </div>
-        `;
-      }
-      
-      // === ПО НЕДЕЛЯМ ===
-      if (weekStats.length > 0) {
-        html += `
-          <div class="history-section">
-            <h4>По неделям (с понедельника)</h4>
-            <div class="history-grid">
-              ${weekStats.map(week => {
-                const avgStatus = getAvgSleepStatus(week.avgDuration);
-                const className = avgStatus === 'По плану' ? 'success' : avgStatus === 'Недосыпание' ? 'warning' : 'danger';
-                
-                return `
-                  <div class="history-item ${className}">
-                    <div class="history-date">${week.period}</div>
-                    <div class="history-value" style="font-size: 0.9em;">
-                      ${avgStatus}
-                    </div>
-                    <div style="font-size: 0.7em; color: #666; margin-top: 4px;">
-                      ${week.details}<br>
-                      Среднее: ${formatSleepDuration(Math.round(week.avgDuration))}
-                    </div>
-                  </div>
-                `;
-              }).join('')}
-            </div>
-          </div>
-        `;
-      }
-      
-      document.getElementById('sleep-history').innerHTML = html || '<p>Нет данных</p>';
-    }
+    return `
+      <div class="history-item ${className}">
+        <div class="history-date">${week.dateRange}</div>
+        <div class="history-value">${hours}ч ${minutes > 0 ? minutes + 'мин' : ''}</div>
+        <div style="font-size:0.75em;color:#666;">
+          📊 ${week.records.length} дн. • Среднее: ${hours}ч ${minutes > 0 ? minutes + 'мин' : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  document.getElementById('sleep-by-weeks').innerHTML = `<div class="history-grid">${monthHTML}</div>`;
+}
 
 
 
