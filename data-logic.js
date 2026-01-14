@@ -583,6 +583,33 @@ function getAbsoluteStats(history, metric) {
   };
 }
 // === СТАТИСТИКА СНА ===
+// === ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ НЕДЕЛЬ ===
+
+function getWeekKey(dateKey) {
+  const date = dateFromKey(dateKey);
+  const day = date.getDay();
+  const diff = date.getDate() - day + (day === 0 ? -6 : 1); // Понедельник
+  const monday = new Date(date.setDate(diff));
+  return getDateKey(monday);
+}
+
+function getWeekDateRange(weekKey) {
+  const startDate = dateFromKey(weekKey);
+  const endDate = new Date(startDate);
+  endDate.setDate(endDate.getDate() + 6);
+  
+  const formatOptions = { day: 'numeric', month: 'short' };
+  const start = startDate.toLocaleDateString('ru-RU', formatOptions);
+  const end = endDate.toLocaleDateString('ru-RU', formatOptions);
+  
+  return `${start} - ${end}`;
+}
+
+function formatShortDate(dateKey) {
+  const date = dateFromKey(dateKey);
+  const days = ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'];
+  return `${days[date.getDay()]}, ${date.getDate()}`;
+}
 
 function getWeeklySleepStats(history) {
   const today = getDateKey();
@@ -641,18 +668,18 @@ function getMonthlySleepStats(history) {
 }
 
 function getSleepStatus(dayData) {
-  if (!dayData.sleepDuration) return 'Небольшое передание';
+  if (!dayData.sleepDuration) return 'Нет данных';
   const hours = dayData.sleepDuration;
   if (hours >= 7 && hours <= 9) return 'По плану';
-  if (hours < 6) return 'Сильное недоедание';
-  if (hours < 7) return 'Небольшое передание';
-  return 'Сильное недоедание';
+  if (hours < 6) return 'Сильное недосыпание';
+  if (hours < 7) return 'Небольшое недосыпание';
+  return 'Пересыпание';
 }
 
 function getAvgSleepStatus(avgHours) {
   if (avgHours >= 7 && avgHours <= 9) return 'По плану';
-  if (avgHours < 7) return 'Небольшое передание';
-  return 'Сильное недоедание';
+  if (avgHours < 7) return 'Недосыпание';
+  return 'Пересыпание';
 }
 
 function formatShortDate(dateKey) {
