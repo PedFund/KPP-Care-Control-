@@ -584,30 +584,11 @@ function getAbsoluteStats(history, metric) {
 }
 
 // === СТАТИСТИКА СНА ===
-
-// Рассчитать длительность сна в часах
-function calculateSleepDuration(bedTime, wakeTime) {
-  const [bedH, bedM] = bedTime.split(':').map(Number);
-  const [wakeH, wakeM] = wakeTime.split(':').map(Number);
-  
-  let bedMinutes = bedH * 60 + bedM;
-  let wakeMinutes = wakeH * 60 + wakeM;
-  
-  // Если проснулся раньше, чем лег (переход через полночь)
-  if (wakeMinutes <= bedMinutes) {
-    wakeMinutes += 24 * 60;
-  }
-  
-  const durationMinutes = wakeMinutes - bedMinutes;
-  return durationMinutes / 60; // Возвращаем часы
-}
+// Используем функции из sleep-logic.js: calculateSleepDuration, formatSleepDuration, getSleepQuality
 
 function getWeekKey(dateKey) {
-  const date = dateFromKey(dateKey);
-  const day = date.getDay();
-  const diff = date.getDate() - day + (day === 0 ? -6 : 1);
-  const monday = new Date(date.setDate(diff));
-  return getDateKey(monday);
+  const monday = getMonday(dateKey);
+  return monday;
 }
 
 function getWeekDateRange(weekKey) {
@@ -615,32 +596,26 @@ function getWeekDateRange(weekKey) {
   const endDate = new Date(startDate);
   endDate.setDate(endDate.getDate() + 6);
   
-  const formatOptions = { day: 'numeric', month: 'short' };
-  const start = startDate.toLocaleDateString('ru-RU', formatOptions);
-  const end = endDate.toLocaleDateString('ru-RU', formatOptions);
+  const start = formatDateShort(weekKey);
+  const end = formatDateShort(getDateKey(endDate));
   
-  return `${start} - ${end}`;
+  return `${start.split(' ')[0]}-${end}`;
 }
 
 function formatShortDate(dateKey) {
   const date = dateFromKey(dateKey);
   const days = ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'];
-  return `${days[date.getDay()]}, ${date.getDate()}`;
+  const day = date.getDate();
+  const month = date.toLocaleDateString('ru-RU', { month: 'short' });
+  return `${days[date.getDay()]}, ${day} ${month}`;
 }
 
-function getSleepStatus(dayData) {
-  if (!dayData.bedTime || !dayData.wakeTime) return 'Нет данных';
+function getSleepStatus(duration) {
+  if (!duration) return 'Нет данных';
+  const quality = getSleepQuality(duration); // используем из sleep-logic.js
   
-  const hours = calculateSleepDuration(dayData.bedTime, dayData.wakeTime);
-  
-  if (hours >= 7 && hours <= 8) return 'По плану';
-  if (hours < 7) return 'Недосыпание';
-  return 'Пересыпание';
-}
-
-function getAvgSleepStatus(avgHours) {
-  if (avgHours >= 7 && avgHours <= 8) return 'По плану';
-  if (avgHours < 7) return 'Недосыпание';
+  if (quality.category === 'normal') return 'По плану';
+  if (quality.category === 'insufficient') return 'Недосыпание';
   return 'Пересыпание';
 }
 
@@ -652,18 +627,13 @@ function getWeeklySleepStats(history) {
     const dateKey = addDays(today, -i);
     const dayData = history[dateKey] || {};
     
-    let duration = null;
-    if (dayData.bedTime && dayData.wakeTime) {
-      duration = calculateSleepDuration(dayData.bedTime, dayData.wakeTime);
-    }
-    
     stats.push({
       date: dateKey,
       displayDate: formatShortDate(dateKey),
       bedTime: dayData.bedTime || null,
       wakeTime: dayData.wakeTime || null,
-      duration: duration,
-      status: getSleepStatus(dayData)
+      duration: dayData.sleepDuration || 0,
+      status: getSleepStatus(dayData.sleepDuration)
     });
   }
   
@@ -675,9 +645,7 @@ function getMonthlySleepStats(history) {
   
   Object.keys(history).forEach(dateKey => {
     const dayData = history[dateKey];
-    if (!dayData.bedTime || !dayData.wakeTime) return;
-    
-    const duration = calculateSleepDuration(dayData.bedTime, dayData.wakeTime);
+    if (!dayData.bedTime || !dayData.wakeTime || !dayData.sleepDuration) return;
     
     const weekKey = getWeekKey(dateKey);
     if (!weeks[weekKey]) {
@@ -691,17 +659,18 @@ function getMonthlySleepStats(history) {
     
     weeks[weekKey].records.push({
       date: dateKey,
-      duration: duration
+      duration: dayData.sleepDuration
     });
-    weeks[weekKey].totalDuration += duration;
+    weeks[weekKey].totalDuration += dayData.sleepDuration;
   });
   
   return Object.values(weeks)
     .map(week => ({
       ...week,
       avgDuration: week.totalDuration / week.records.length,
-      status: getAvgSleepStatus(week.totalDuration / week.records.length)
+      status: getSleepStatus(week.avgDuration)
     }))
     .sort((a, b) => b.weekKey.localeCompare(a.weekKey))
     .slice(0, 8);
 }
+
