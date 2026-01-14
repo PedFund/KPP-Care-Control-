@@ -582,3 +582,81 @@ function getAbsoluteStats(history, metric) {
     total: count
   };
 }
+// === СТАТИСТИКА СНА ===
+
+function getWeeklySleepStats(history) {
+  const today = getDateKey();
+  const stats = [];
+  
+  for (let i = 6; i >= 0; i--) {
+    const dateKey = addDays(today, -i);
+    const dayData = history[dateKey] || {};
+    
+    stats.push({
+      date: dateKey,
+      displayDate: formatShortDate(dateKey),
+      bedTime: dayData.bedTime || null,
+      wakeTime: dayData.wakeTime || null,
+      duration: dayData.sleepDuration || null,
+      status: getSleepStatus(dayData)
+    });
+  }
+  
+  return stats;
+}
+
+function getMonthlySleepStats(history) {
+  const weeks = {};
+  const today = getDateKey();
+  
+  Object.keys(history).forEach(dateKey => {
+    const dayData = history[dateKey];
+    if (!dayData.sleepDuration) return;
+    
+    const weekKey = getWeekKey(dateKey);
+    if (!weeks[weekKey]) {
+      weeks[weekKey] = {
+        weekKey,
+        dateRange: getWeekDateRange(weekKey),
+        records: [],
+        totalDuration: 0
+      };
+    }
+    
+    weeks[weekKey].records.push({
+      date: dateKey,
+      duration: dayData.sleepDuration
+    });
+    weeks[weekKey].totalDuration += dayData.sleepDuration;
+  });
+  
+  return Object.values(weeks)
+    .map(week => ({
+      ...week,
+      avgDuration: week.totalDuration / week.records.length,
+      status: getAvgSleepStatus(week.totalDuration / week.records.length)
+    }))
+    .sort((a, b) => b.weekKey.localeCompare(a.weekKey))
+    .slice(0, 8);
+}
+
+function getSleepStatus(dayData) {
+  if (!dayData.sleepDuration) return 'Небольшое передание';
+  const hours = dayData.sleepDuration;
+  if (hours >= 7 && hours <= 9) return 'По плану';
+  if (hours < 6) return 'Сильное недоедание';
+  if (hours < 7) return 'Небольшое передание';
+  return 'Сильное недоедание';
+}
+
+function getAvgSleepStatus(avgHours) {
+  if (avgHours >= 7 && avgHours <= 9) return 'По плану';
+  if (avgHours < 7) return 'Небольшое передание';
+  return 'Сильное недоедание';
+}
+
+function formatShortDate(dateKey) {
+  const date = dateFromKey(dateKey);
+  const days = ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'];
+  return `${days[date.getDay()]}, ${date.getDate()}`;
+}
