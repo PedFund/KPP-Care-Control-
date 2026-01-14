@@ -633,6 +633,10 @@ function loadTabData(tabName) {
     case 'nutrition':
       renderNutritionHistory();
       break;
+      // В switch внутри setupTabs():
+    case 'sleep':
+      renderSleepHistory();
+      break;
     case 'measurements':
       renderMeasurements();
       break;
