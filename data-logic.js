@@ -168,27 +168,6 @@ async function getUserHistory(userId) {
   }
 }
 
-// Сохранить данные за день
-async function saveDayData(userId, dateKey, data, userData, history) {
-  try {
-    const baseSteps = userData.baseSteps || 5000;
-    
-    // Определяем норму для этого дня
-    let goalForThisDay;
-    
-    if (dateKey === getDateKey()) {
-      // Для сегодняшнего дня используем текущую норму
-      goalForThisDay = getCurrentGoal(userData, history);
-    } else {
-      // Для прошлых дней рассчитываем норму на основе предыдущего дня
-      const prevDateKey = addDays(dateKey, -1);
-      if (history[prevDateKey]) {
-        goalForThisDay = calculateNewGoal(history[prevDateKey], baseSteps);
-      } else {
-        goalForThisDay = baseSteps;
-      }
-    }
-
    async function saveDayData(userId, dateKey, data, userData, history) {
   try {
     const baseSteps = userData.baseSteps || 5000;
