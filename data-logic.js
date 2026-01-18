@@ -189,6 +189,26 @@ async function saveDayData(userId, dateKey, data, userData, history) {
       }
     }
 
+   async function saveDayData(userId, dateKey, data, userData, history) {
+  try {
+    const baseSteps = userData.baseSteps || 5000;
+    
+    // Определяем норму для этого дня
+    let goalForThisDay;
+    
+    if (dateKey === getDateKey()) {
+      // Для сегодняшнего дня используем текущую норму
+      goalForThisDay = getCurrentGoal(userData, history);
+    } else {
+      // Для прошлых дней рассчитываем норму на основе предыдущего дня
+      const prevDateKey = addDays(dateKey, -1);
+      if (history[prevDateKey]) {
+        goalForThisDay = calculateNewGoal(history[prevDateKey], baseSteps);
+      } else {
+        goalForThisDay = baseSteps;
+      }
+    }
+
     const entry = {
       date: dateKey,
       totalSteps: parseInt(data.totalSteps) || 0,
@@ -200,7 +220,6 @@ async function saveDayData(userId, dateKey, data, userData, history) {
       abs: data.abs ? 1 : 0,
       nutrition: parseInt(data.nutrition) || 0,
       water: parseInt(data.water) || 0,
-      // ✅ СОН
       bedTime: data.bedTime || null,
       wakeTime: data.wakeTime || null,
       sleepDuration: parseInt(data.sleepDuration) || 0,
@@ -209,12 +228,34 @@ async function saveDayData(userId, dateKey, data, userData, history) {
 
     await db.collection('users').doc(userId).collection('history').doc(dateKey).set(entry);
     
+    // ✅ НОВОЕ: Пересчитываем норму для следующего дня
+    const nextDateKey = addDays(dateKey, 1);
+    const newGoalForNextDay = calculateNewGoal(entry, baseSteps);
+    
+    // Если следующий день уже есть в истории, обновляем его норму
+    if (history[nextDateKey]) {
+      await db.collection('users').doc(userId)
+        .collection('history').doc(nextDateKey)
+        .update({ goal: newGoalForNextDay });
+    }
+    // Если следующий день - это сегодня, создаём пустую запись с новой нормой
+    else if (nextDateKey === getDateKey()) {
+      await db.collection('users').doc(userId)
+        .collection('history').doc(nextDateKey)
+        .set({
+          date: nextDateKey,
+          goal: newGoalForNextDay,
+          timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+    }
+    
     return { success: true, entry };
   } catch (error) {
     console.error('Error saving day data:', error);
     return { success: false, error };
   }
 }
+
 
 // Получить всех пользователей (для админа) - DEPRECATED, используйте getAllUsersWithDetails из admin-logic.js
 async function getAllUsers() {
