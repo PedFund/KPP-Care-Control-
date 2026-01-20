@@ -689,7 +689,7 @@ function renderStepsHistory() {
               <div class="history-item ${className}">
                 <div class="history-date">${getDayName(item.date)}, ${formatDate(item.date).split(' ')[0]}</div>
                 <div class="history-value">${item.value.toLocaleString('ru-RU')}</div>
-                ${entry ? `<div style="font-size:0.8em;color:#666;">норма: ${entry.goal}</div>` : ''}
+                // норма ${entry ? `<div style="font-size:0.8em;color:#666;">норма: ${entry.goal}</div>` : ''}
               </div>
             `;
           }).join('')}
