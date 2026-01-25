@@ -267,13 +267,13 @@ function calculateStatistics(history) {
     }
     
      if (entry.bedTime) {
-    const [hours, minutes] = entry.bedTime.split(':').map(Number);
-    let totalMinutes = hours * 60 + minutes;
-    // Если время с 00:00 до 05:59, считаем следующим днём
-    if (hours >= 0 && hours < 6) totalMinutes += 24 * 60;
-    bedTimeMinutesSum += totalMinutes;
-    bedTimeCount++;
-  }
+      const [hours, minutes] = entry.bedTime.split(':').map(Number);
+      let totalMinutes = hours * 60 + minutes;
+      // Если время с 00:00 до 05:59, считаем следующим днём
+      if (hours >= 0 && hours < 6) totalMinutes += 24 * 60;
+      bedTimeMinutesSum += totalMinutes;
+      bedTimeCount++;
+    }
   
   const daysCount = daysWithData.length || 1; // Избегаем деления на 0
   const avgSteps = Math.round(totalSteps / daysCount);
