@@ -266,13 +266,14 @@ function calculateStatistics(history) {
       sleepCount++;
     }
     
-    if (entry.bedTime) {
-      // Конвертируем время в минуты (например, "23:30" → 1410 минут)
-      const [hours, minutes] = entry.bedTime.split(':').map(Number);
-      bedTimeMinutesSum += hours * 60 + minutes;
-      bedTimeCount++;
-    }
-  });
+     if (entry.bedTime) {
+    const [hours, minutes] = entry.bedTime.split(':').map(Number);
+    let totalMinutes = hours * 60 + minutes;
+    // Если время с 00:00 до 05:59, считаем следующим днём
+    if (hours >= 0 && hours < 6) totalMinutes += 24 * 60;
+    bedTimeMinutesSum += totalMinutes;
+    bedTimeCount++;
+  }
   
   const daysCount = daysWithData.length || 1; // Избегаем деления на 0
   const avgSteps = Math.round(totalSteps / daysCount);
@@ -312,10 +313,13 @@ function calculateStatistics(history) {
     let avgBedTime = '—';
     if (bedTimeCount > 0) {
       const avgMinutes = Math.round(bedTimeMinutesSum / bedTimeCount);
-      const bedHours = Math.floor(avgMinutes / 60);
-      const bedMinutes = avgMinutes % 60;
+      // Нормализуем обратно
+      const normalized = avgMinutes >= 1440 ? avgMinutes - 1440 : avgMinutes;
+      const bedHours = Math.floor(normalized / 60);
+      const bedMinutes = normalized % 60;
       avgBedTime = `${String(bedHours).padStart(2, '0')}:${String(bedMinutes).padStart(2, '0')}`;
     }
+
     
     sleepStats = {
       avgDuration,
