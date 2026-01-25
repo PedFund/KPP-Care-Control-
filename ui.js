@@ -259,7 +259,7 @@ function calculateStatistics(history) {
     if (entry.abs === 1) absCount++;
     waterSum += entry.water || 0;
     nutritionSum += entry.nutrition || 0;
-  } 
+  
     // ✅ НОВОЕ: Подсчёт сна
     if (entry.sleepDuration && entry.sleepDuration > 0) {
       sleepDurationSum += entry.sleepDuration;
@@ -274,7 +274,7 @@ function calculateStatistics(history) {
       bedTimeMinutesSum += totalMinutes;
       bedTimeCount++;
     }
-  
+  }); 
   const daysCount = daysWithData.length || 1; // Избегаем деления на 0
   const avgSteps = Math.round(totalSteps / daysCount);
   const morningPercent = Math.round((morningCount / daysCount) * 100);
