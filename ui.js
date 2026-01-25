@@ -1094,9 +1094,12 @@ function renderNutritionHistory() {
           ${weeks.map(week => {
             // Определяем CSS класс по доминирующей категории
             const dominantValue = parseInt(week.dominantCategory);
-            let className;if (dominantValue === 0) className = 'success';else if (dominantValue === -1) className = 'warning';else if (dominantValue === 1) className = 'warning-light';else className = 'danger';// OLD: 
-                            Math.abs(dominantValue) === 1 ? 'warning' : 'danger';
-            
+            let className;
+            if (dominantValue === 0) className = 'success';
+            else if (dominantValue === -1) className = 'warning';
+            else if (dominantValue === 1) className = 'warning-light';
+            else className = 'danger';
+          
             return `
               <div class="history-item ${className}">
                 <div class="history-date">${week.period}</div>
