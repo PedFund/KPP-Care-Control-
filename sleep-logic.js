@@ -134,12 +134,12 @@ function calculateSleepStats(history) {
       ? bedTimes[mid]
       : Math.round((bedTimes[mid - 1] + bedTimes[mid]) / 2);
   
-  // Обратно в HH:MM
-  const bedH = Math.floor(medianBedMinutes / 60) % 24;
-  const bedM = medianBedMinutes % 60;
+    // Обратно в HH:MM (нормализация по суткам)
+  const normalizedMinutes = medianBedMinutes % (24 * 60);
+  const bedH = Math.floor(normalizedMinutes / 60);
+  const bedM = normalizedMinutes % 60;
   const avgBedTime = `${String(bedH).padStart(2, '0')}:${String(bedM).padStart(2, '0')}`;
-
-  
+ 
   // Среднее время пробуждения
   const wakeTimes = entries.map(e => {
     const [h, m] = e.wakeTime.split(':').map(Number);
