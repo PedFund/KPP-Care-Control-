@@ -120,7 +120,7 @@ function calculateSleepStats(history) {
     const [h, m] = e.bedTime.split(':').map(Number);
     let minutes = h * 60 + m;
     // Разворачиваем ночь после полуночи
-    if (h < 12) minutes += 24 * 60;
+    if (h < 6) minutes += 24 * 60;
     return minutes;
   });
   
