@@ -2049,14 +2049,14 @@ async function renderAdminOverview() {
           <!-- ВОДА -->
           <div class="stat-row">
             <span class="stat-icon">💧</span>
-            <span class="stat-label">Вода:</span>
+            <span class="stat-label">Вода 0-6:</span>
             <span class="stat-value">Среднее: ${stats.waterAvg}</span>
           </div>
 
           <!-- ПИТАНИЕ -->
           <div class="stat-row">
             <span class="stat-icon">🍽️</span>
-            <span class="stat-label">Питание:</span>
+            <span class="stat-label">Питание -2 2:</span>
             <span class="stat-value">
               Среднее: ${stats.nutritionAvg} (${stats.nutritionText})
             </span>
