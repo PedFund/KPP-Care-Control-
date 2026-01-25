@@ -18,26 +18,6 @@
 // === ПОЛУЧЕНИЕ ДАННЫХ ПОЛЬЗОВАТЕЛЕЙ ===
 // === ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ===
 
-// Получить историю пользователя из подколлекции
-async function getUserHistory(userId) {
-  const historySnapshot = await db.collection('users').doc(userId).collection('history').get();
-  const history = {};
-  historySnapshot.forEach(doc => {
-    history[doc.id] = doc.data();
-  });
-  return history;
-}
-
-// Получить измерения пользователя из подколлекции
-async function getUserMeasurements(userId) {
-  const measurementsSnapshot = await db.collection('users').doc(userId).collection('measurements').get();
-  const measurements = {};
-  measurementsSnapshot.forEach(doc => {
-    measurements[doc.id] = doc.data();
-  });
-  return measurements;
-}
-
 // Получить всех пользователей с их историей и измерениями
 async function getAllUsersWithDetails() {
   try {
