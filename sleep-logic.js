@@ -115,18 +115,30 @@ function calculateSleepStats(history) {
   const minDuration = Math.min(...durations);
   const maxDuration = Math.max(...durations);
   
-  // Среднее время укладывания
+  // Типичное (медианное) время укладывания
   const bedTimes = entries.map(e => {
     const [h, m] = e.bedTime.split(':').map(Number);
     let minutes = h * 60 + m;
-    // Если время после полуночи (00:00-05:59), добавляем 24 часа
+    // Разворачиваем ночь после полуночи
     if (h < 6) minutes += 24 * 60;
     return minutes;
   });
-  const avgBedMinutes = Math.round(bedTimes.reduce((a, b) => a + b, 0) / bedTimes.length);
-  const avgBedH = Math.floor(avgBedMinutes / 60) % 24;
-  const avgBedM = avgBedMinutes % 60;
-  const avgBedTime = `${String(avgBedH).padStart(2, '0')}:${String(avgBedM).padStart(2, '0')}`;
+  
+  // Сортировка
+  bedTimes.sort((a, b) => a - b);
+  
+  // Медиана
+  const mid = Math.floor(bedTimes.length / 2);
+  const medianBedMinutes =
+    bedTimes.length % 2 !== 0
+      ? bedTimes[mid]
+      : Math.round((bedTimes[mid - 1] + bedTimes[mid]) / 2);
+  
+  // Обратно в HH:MM
+  const bedH = Math.floor(medianBedMinutes / 60) % 24;
+  const bedM = medianBedMinutes % 60;
+  const avgBedTime = `${String(bedH).padStart(2, '0')}:${String(bedM).padStart(2, '0')}`;
+
   
   // Среднее время пробуждения
   const wakeTimes = entries.map(e => {
