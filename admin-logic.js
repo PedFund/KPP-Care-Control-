@@ -411,27 +411,29 @@ function getUserSleepStats(history) {
     avgDuration = `${hours}ч ${mins}мин`;
   }
   
-  // Среднее время отхода ко сну (примерное)
-  let avgBedTime = null;
-  if (bedTimes.length > 0) {
-    // Конвертируем времена в минуты от полуночи
-    const bedMinutes = bedTimes.map(time => {
-      const [h, m] = time.split(':').map(Number);
-      let minutes = h * 60 + m;
-      // Если время < 12:00, считаем что это ночь (добавляем 24 часа)
-      if (h < 12) minutes += 24 * 60;
-      return minutes;
-    });
-    
-    const avgBedMinutes = Math.round(bedMinutes.reduce((a, b) => a + b, 0) / bedMinutes.length);
-    const h = Math.floor(avgBedMinutes / 60) % 24;
-    const m = avgBedMinutes % 60;
-    avgBedTime = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-  }
-  
-  return {
-    avgDuration: avgDuration,
-    avgBedTime: avgBedTime,
-    count: count
-  };
+// Среднее время отхода ко сну (примерное)
+let avgBedTime = null;
+if (bedTimes.length > 0) {
+  // Конвертируем времена в минуты от полуночи
+  const bedMinutes = bedTimes.map(time => {
+    const [h, m] = time.split(':').map(Number);
+    let minutes = h * 60 + m;
+    // Если время с 00:00 до 05:59, считаем что это ночь (добавляем 24 часа)
+    if (h >= 0 && h < 6) minutes += 24 * 60;
+    return minutes;
+  });
+
+  const avgBedMinutes = Math.round(bedMinutes.reduce((a, b) => a + b, 0) / bedMinutes.length);
+  // Нормализуем обратно к диапазону 0-1439
+  const normalizedMinutes = avgBedMinutes >= 24 * 60 ? avgBedMinutes - 24 * 60 : avgBedMinutes;
+  const bedH = Math.floor(normalizedMinutes / 60);  // ← переименовал h в bedH
+  const bedM = normalizedMinutes % 60;              // ← переименовал m в bedM
+
+  avgBedTime = `${String(bedH).padStart(2, '0')}:${String(bedM).padStart(2, '0')}`;
 }
+
+return {
+  avgDuration: avgDuration,
+  avgBedTime: avgBedTime,
+  count: count
+};
