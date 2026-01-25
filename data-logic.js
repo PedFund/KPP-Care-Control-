@@ -167,6 +167,22 @@ async function getUserHistory(userId) {
     return {};
   }
 }
+// Получить измерения пользователя
+async function getUserMeasurements(userId) {
+  try {
+    const snapshot = await db.collection('users').doc(userId).collection('measurements').get();
+    const measurements = {};
+    
+    snapshot.forEach(doc => {
+      measurements[doc.id] = doc.data();
+    });
+    
+    return measurements;
+  } catch (error) {
+    console.error('Error getting user measurements:', error);
+    return {};
+  }
+}
 
    async function saveDayData(userId, dateKey, data, userData, history) {
   try {
