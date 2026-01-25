@@ -119,8 +119,8 @@ function calculateSleepStats(history) {
   const bedTimes = entries.map(e => {
     const [h, m] = e.bedTime.split(':').map(Number);
     let minutes = h * 60 + m;
-    // Разворачиваем ночь после полуночи
-    if (h < 6) minutes += 24 * 60;
+    // Если время с 00:00 до 05:59, считаем что это ночь
+    if (h >= 0 && h < 6) minutes += 24 * 60;
     return minutes;
   });
   
@@ -134,8 +134,8 @@ function calculateSleepStats(history) {
       ? bedTimes[mid]
       : Math.round((bedTimes[mid - 1] + bedTimes[mid]) / 2);
   
-    // Обратно в HH:MM (нормализация по суткам)
-  const normalizedMinutes = medianBedMinutes % (24 * 60);
+  // Нормализация
+  const normalizedMinutes = medianBedMinutes >= 24 * 60 ? medianBedMinutes - 24 * 60 : medianBedMinutes;
   const bedH = Math.floor(normalizedMinutes / 60);
   const bedM = normalizedMinutes % 60;
   const avgBedTime = `${String(bedH).padStart(2, '0')}:${String(bedM).padStart(2, '0')}`;
