@@ -402,38 +402,39 @@ function getUserSleepStats(history) {
     }
   });
   
-  // Средняя продолжительность сна
-  const avgMinutes = count > 0 ? Math.round(totalMinutes / count) : null;
-  let avgDuration = null;
-  if (avgMinutes !== null) {
-    const hours = Math.floor(avgMinutes / 60);
-    const mins = avgMinutes % 60;
-    avgDuration = `${hours}ч ${mins}мин`;
+    // Средняя продолжительность сна
+    const avgMinutes = count > 0 ? Math.round(totalMinutes / count) : null;
+    let avgDuration = null;
+    if (avgMinutes !== null) {
+      const hours = Math.floor(avgMinutes / 60);
+      const mins = avgMinutes % 60;
+      avgDuration = `${hours}ч ${mins}мин`;
+    }
+    
+  // Среднее время отхода ко сну (примерное)
+  let avgBedTime = null;
+  if (bedTimes.length > 0) {
+    // Конвертируем времена в минуты от полуночи
+    const bedMinutes = bedTimes.map(time => {
+      const [h, m] = time.split(':').map(Number);
+      let minutes = h * 60 + m;
+      // Если время с 00:00 до 05:59, считаем что это ночь (добавляем 24 часа)
+      if (h >= 0 && h < 6) minutes += 24 * 60;
+      return minutes;
+    });
+  
+    const avgBedMinutes = Math.round(bedMinutes.reduce((a, b) => a + b, 0) / bedMinutes.length);
+    // Нормализуем обратно к диапазону 0-1439
+    const normalizedMinutes = avgBedMinutes >= 24 * 60 ? avgBedMinutes - 24 * 60 : avgBedMinutes;
+    const bedH = Math.floor(normalizedMinutes / 60);  // ← переименовал h в bedH
+    const bedM = normalizedMinutes % 60;              // ← переименовал m в bedM
+  
+    avgBedTime = `${String(bedH).padStart(2, '0')}:${String(bedM).padStart(2, '0')}`;
   }
   
-// Среднее время отхода ко сну (примерное)
-let avgBedTime = null;
-if (bedTimes.length > 0) {
-  // Конвертируем времена в минуты от полуночи
-  const bedMinutes = bedTimes.map(time => {
-    const [h, m] = time.split(':').map(Number);
-    let minutes = h * 60 + m;
-    // Если время с 00:00 до 05:59, считаем что это ночь (добавляем 24 часа)
-    if (h >= 0 && h < 6) minutes += 24 * 60;
-    return minutes;
-  });
-
-  const avgBedMinutes = Math.round(bedMinutes.reduce((a, b) => a + b, 0) / bedMinutes.length);
-  // Нормализуем обратно к диапазону 0-1439
-  const normalizedMinutes = avgBedMinutes >= 24 * 60 ? avgBedMinutes - 24 * 60 : avgBedMinutes;
-  const bedH = Math.floor(normalizedMinutes / 60);  // ← переименовал h в bedH
-  const bedM = normalizedMinutes % 60;              // ← переименовал m в bedM
-
-  avgBedTime = `${String(bedH).padStart(2, '0')}:${String(bedM).padStart(2, '0')}`;
+  return {
+    avgDuration: avgDuration,
+    avgBedTime: avgBedTime,
+    count: count
+  };
 }
-
-return {
-  avgDuration: avgDuration,
-  avgBedTime: avgBedTime,
-  count: count
-};
