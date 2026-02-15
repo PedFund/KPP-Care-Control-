@@ -667,6 +667,35 @@
 
             // Отображаем результаты
             displayResults(scores);
+          // === Сохранение в Firebase ===
+            if (window.currentUser) {
+            
+                const scoreObject = {
+                    water: scores[0],
+                    protein: scores[1],
+                    fats: scores[2],
+                    carbs: scores[3],
+                    fiber: scores[4],
+                    variety: scores[5],
+                    organization: scores[6]
+                };
+            
+                firebase.firestore()
+                    .collection("users")
+                    .doc(window.currentUser.uid)
+                    .collection("nutritionWheel")
+                    .add({
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        scores: scoreObject
+                    })
+                    .then(() => {
+                        console.log("Колесо сохранено");
+                    })
+                    .catch((error) => {
+                        console.error("Ошибка сохранения:", error);
+                    });
+}
+
         }
 
         // ===== NEW: utilities =====
