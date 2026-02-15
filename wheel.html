@@ -49,11 +49,12 @@
 <script src="auth.js"></script>
 <script>
   firebase.auth().onAuthStateChanged(function(user) {
-    if (!user) {
-      // если нет авторизации — возвращаем на главную
-      window.location.href = "/";
-    } else {
+    if (user) {
       console.log("Авторизован:", user.uid);
+      window.currentUser = user; // сохраняем глобально
+    } else {
+      console.log("Ждём авторизацию...");
+      // НЕ редиректим сразу
     }
   });
 </script>
