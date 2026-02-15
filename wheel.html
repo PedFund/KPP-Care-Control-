@@ -1,976 +1,650 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Колесо баланса питания</title>
-
-  <!-- Стили можно пока временно встроить -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Колесо баланса питания: КПП</title>
   <style>
+    /* ===== Базовые стили и сброс ===== */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
       padding: 20px;
-      background: #f5f7fa;
+      color: #333;
     }
 
-    h1 {
-      margin-bottom: 20px;
-    }
-
+    /* ===== Кнопка "Назад" ===== */
     .back-btn {
       margin-bottom: 20px;
-      padding: 8px 14px;
+      padding: 10px 18px;
       border: none;
-      background: #6c757d;
+      background: rgba(255, 255, 255, 0.2);
       color: white;
       border-radius: 6px;
       cursor: pointer;
+      font-size: 14px;
+      backdrop-filter: blur(5px);
+      transition: background 0.3s;
+    }
+    .back-btn:hover { background: rgba(255, 255, 255, 0.3); }
+
+    /* ===== Контейнер ===== */
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+      opacity: 0; /* Для анимации появления */
+      transform: translateY(20px);
+    }
+
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+
+    .header h1 { font-size: 2.5em; margin-bottom: 10px; }
+    .header p { font-size: 1.1em; opacity: 0.9; }
+
+    .content { padding: 30px; }
+
+    /* ===== Категории и вопросы ===== */
+    .category {
+      background: #f8f9fa;
+      border-radius: 15px;
+      padding: 25px;
+      margin-bottom: 25px;
+      border-left: 5px solid;
+      transition: transform 0.2s;
+    }
+    .category:hover { transform: translateX(5px); }
+
+    .category:nth-child(1) { border-left-color: #3498db; }
+    .category:nth-child(2) { border-left-color: #e74c3c; }
+    .category:nth-child(3) { border-left-color: #f39c12; }
+    .category:nth-child(4) { border-left-color: #2ecc71; }
+    .category:nth-child(5) { border-left-color: #9b59b6; }
+    .category:nth-child(6) { border-left-color: #1abc9c; }
+    .category:nth-child(7) { border-left-color: #e67e22; }
+
+    .category-title {
+      font-size: 1.5em;
+      font-weight: bold;
+      margin-bottom: 20px;
+      color: #2c3e50;
+    }
+
+    .question {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+      padding: 12px;
+      background: white;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+    .question:hover { background: #e8f4f8; }
+
+    .question label {
+      flex: 1;
+      cursor: pointer;
+      font-size: 1em;
+      line-height: 1.5;
+      user-select: none;
+    }
+
+    .question input[type="checkbox"] {
+      width: 24px;
+      height: 24px;
+      margin-right: 15px;
+      cursor: pointer;
+      accent-color: #667eea;
+    }
+
+    /* ===== Кнопки управления ===== */
+    .button-container { text-align: center; margin: 40px 0; }
+
+    .calculate-btn {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 18px 60px;
+      font-size: 1.3em;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+      transition: all 0.3s;
+      font-weight: bold;
+    }
+    .calculate-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 40px rgba(102, 126, 234, 0.6);
+    }
+    .calculate-btn:active { transform: translateY(0); }
+
+    .reset-btn {
+      background: #95a5a6;
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      font-size: 1em;
+      border-radius: 50px;
+      cursor: pointer;
+      margin-left: 15px;
+      transition: all 0.3s;
+    }
+    .reset-btn:hover {
+      background: #7f8c8d;
+      transform: translateY(-2px);
+    }
+
+    /* ===== Результаты ===== */
+    .results {
+      display: none;
+      padding: 40px;
+      background: #f8f9fa;
+      border-radius: 15px;
+      margin-top: 30px;
+    }
+    .results.show {
+      display: block;
+      animation: fadeIn 0.5s;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .results h2 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 30px;
+      font-size: 2em;
+    }
+
+    .canvas-container {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 30px;
+    }
+    #wheelCanvas {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .scores {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-top: 30px;
+    }
+
+    .score-item {
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .score-item h3 {
+      font-size: 1em;
+      margin-bottom: 10px;
+      color: #555;
+    }
+
+    .score-item .score {
+      font-size: 2em;
+      font-weight: bold;
+      color: #667eea;
+    }
+
+    @media (max-width: 768px) {
+      .header h1 { font-size: 1.8em; }
+      .category { padding: 20px; }
+      .category-title { font-size: 1.3em; }
+      .question { flex-direction: row; align-items: flex-start; }
+      .calculate-btn { padding: 15px 40px; font-size: 1.1em; }
+      .scores { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
 
-<button class="back-btn" onclick="window.location.href='/'">
-← Назад к измерениям
-</button>
+  <button class="back-btn" onclick="window.location.href='/'">
+    ← Назад к измерениям
+  </button>
 
-<h1>🎯 Колесо баланса питания</h1>
-
-<div id="wheel-container">
- <!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Колесо баланса питания: КПП</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-            color: #333;
-        }
-
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            overflow: hidden;
-        }
-
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-
-        .header p {
-            font-size: 1.1em;
-            opacity: 0.9;
-        }
-
-        .content {
-            padding: 30px;
-        }
-
-        .category {
-            background: #f8f9fa;
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 25px;
-            border-left: 5px solid;
-            transition: transform 0.2s;
-        }
-
-        .category:hover {
-            transform: translateX(5px);
-        }
-
-        .category:nth-child(1) { border-left-color: #3498db; }
-        .category:nth-child(2) { border-left-color: #e74c3c; }
-        .category:nth-child(3) { border-left-color: #f39c12; }
-        .category:nth-child(4) { border-left-color: #2ecc71; }
-        .category:nth-child(5) { border-left-color: #9b59b6; }
-        .category:nth-child(6) { border-left-color: #1abc9c; }
-        .category:nth-child(7) { border-left-color: #e67e22; }
-        .category:nth-child(8) { border-left-color: #34495e; }
-
-        .category-title {
-            font-size: 1.5em;
-            font-weight: bold;
-            margin-bottom: 20px;
-            color: #2c3e50;
-        }
-
-        .question {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
-            padding: 12px;
-            background: white;
-            border-radius: 8px;
-            transition: background 0.2s;
-        }
-
-        .question:hover {
-            background: #e8f4f8;
-        }
-
-        .question label {
-            flex: 1;
-            cursor: pointer;
-            font-size: 1em;
-            line-height: 1.5;
-            user-select: none;
-        }
-
-        .question input[type="checkbox"] {
-            width: 24px;
-            height: 24px;
-            margin-right: 15px;
-            cursor: pointer;
-            accent-color: #667eea;
-        }
-
-        .button-container {
-            text-align: center;
-            margin: 40px 0;
-        }
-
-        .calculate-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 18px 60px;
-            font-size: 1.3em;
-            border-radius: 50px;
-            cursor: pointer;
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
-            transition: all 0.3s;
-            font-weight: bold;
-        }
-
-        .calculate-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.6);
-        }
-
-        .calculate-btn:active {
-            transform: translateY(0);
-        }
-
-        .results {
-            display: none;
-            padding: 40px;
-            background: #f8f9fa;
-            border-radius: 15px;
-            margin-top: 30px;
-        }
-
-        .results.show {
-            display: block;
-            animation: fadeIn 0.5s;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .results h2 {
-            text-align: center;
-            color: #2c3e50;
-            margin-bottom: 30px;
-            font-size: 2em;
-        }
-
-        .canvas-container {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 30px;
-        }
-
-        #wheelCanvas {
-            max-width: 100%;
-            height: auto;
-        }
-
-        .scores {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 30px;
-        }
-
-        .score-item {
-            background: white;
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .score-item h3 {
-            font-size: 1em;
-            margin-bottom: 10px;
-            color: #555;
-        }
-
-        .score-item .score {
-            font-size: 2em;
-            font-weight: bold;
-            color: #667eea;
-        }
-
-        @media (max-width: 768px) {
-            .header h1 {
-                font-size: 1.8em;
-            }
-
-            .category {
-                padding: 20px;
-            }
-
-            .category-title {
-                font-size: 1.3em;
-            }
-
-            .question {
-                flex-direction: row;
-                align-items: flex-start;
-            }
-
-            .calculate-btn {
-                padding: 15px 40px;
-                font-size: 1.1em;
-            }
-
-            .scores {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .reset-btn {
-            background: #95a5a6;
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            font-size: 1em;
-            border-radius: 50px;
-            cursor: pointer;
-            margin-left: 15px;
-            transition: all 0.3s;
-        }
-
-        .reset-btn:hover {
-            background: #7f8c8d;
-            transform: translateY(-2px);
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>🎯 Колесо баланса питания: КПП</h1>
-            <p>Ответьте на вопросы и узнайте свой баланс питания</p>
-        </div>
-
-        <div class="content">
-            <form id="balanceForm">
-                <!-- Вода -->
-                <div class="category">
-                    <div class="category-title">💧 Вода</div>
-                    <div class="question">
-                        <input type="checkbox" id="water1" name="water">
-                        <label for="water1">Я отличаю жажду от голода.</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="water2" name="water">
-                        <label for="water2">Я начинаю утро с употребления воды.</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="water3" name="water">
-                        <label for="water3">Я практикую навык «тестового глотка» для определения голода или жажды.</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="water4" name="water">
-                        <label for="water4">Я посещаю туалет не менее 4 раз за день.</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="water5" name="water">
-                        <label for="water5">Моя моча ненасыщенного цвета (светло-жёлтая, прозрачная).</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="water6" name="water">
-                        <label for="water6">У меня нет сухости кожи.</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="water7" name="water">
-                        <label for="water7">У меня нет отечности глаз утром (трудно открыть глаза) или отеков на ногах.</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="water8" name="water">
-                        <label for="water8">У меня нет желания пить после употребления еды.</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="water9" name="water">
-                        <label for="water9">У меня нет сухого стула или запоров.</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="water10" name="water">
-                        <label for="water10">У меня нет сухости слизистых, заложенности носа (особенно по утрам).</label>
-                    </div>
-                </div>
-
-                <!-- Белок -->
-                <div class="category">
-                    <div class="category-title">🥩 Белок</div>
-                    <div class="question">
-                        <input type="checkbox" id="protein1" name="protein">
-                        <label for="protein1">Я употребляю животный белок.</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="protein2" name="protein">
-                        <label for="protein2">Я употребляю растительный белок.</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="protein3" name="protein">
-                        <label for="protein3">В каждом моем приеме пищи присутствует источник белка (животный или растительный).</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="protein4" name="protein">
-                        <label for="protein4">У меня нет газообразования после еды.</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="protein5" name="protein">
-                        <label for="protein5">Я ограничиваю употребление красного мяса 1-2 раза в неделю.</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="protein6" name="protein">
-                        <label for="protein6">Я мариную мясо перед приготовлением еды.</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="protein7" name="protein">
-                        <label for="protein7">Я использую щадящие способы приготовления мяса (тушение, запекание при низких температурах и т.д.).</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="protein8" name="protein">
-                        <label for="protein8">У меня нет сонливости после употребления белковой пищи.</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="protein9" name="protein">
-                        <label for="protein9">У меня нет мышечной слабости.</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="protein10" name="protein">
-                        <label for="protein10">У меня нет тяжести в животе после еды и симптомов дефицита белка.</label>
-                    </div>
-                </div>
-
-                <!-- Жиры -->
-                <div class="category">
-                    <div class="category-title">🥑 Жиры</div>
-                    <div class="question">
-                        <input type="checkbox" id="fats1" name="fats">
-                        <label for="fats1">Я ем животные жиры (жирное мясо, сливочное масло, яйца, сало и т.д.).</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="fats2" name="fats">
-                        <label for="fats2">В моем рационе отсутствуют прогорклые масла и продукты, содержащие трансжиры (маргарин, промышленная выпечка, сухари, печенье, вафли, майонез, попкорн, крекеры, чипсы, полуфабрикаты и т.д.).</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="fats3" name="fats">
-                        <label for="fats3">Я ем жирную морскую рыбу 2-3 раза в неделю.</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="fats4" name="fats">
-                        <label for="fats4">Иногда я готовлю пищу на насыщенных жирах (топленое сливочное масло (гхи), кокосовое масло, животный жир и т.д.)</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="fats5" name="fats">
-                        <label for="fats5">Я добавляю в ежедневную пищу нерафинированные качественные растительные масла (оливковое, льняное, подсолнечное, ореховое и т.д.).</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="fats6" name="fats">
-                        <label for="fats6">У меня нет постоянного чувства голода.</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="fats7" name="fats">
-                        <label for="fats7">После употребления жирной пищи у меня нет тяжести и дискомфорта в животе.</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="fats8" name="fats">
-                        <label for="fats8">У меня нет бесконтрольных эмоций и/или депрессии.</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="fats9" name="fats">
-                        <label for="fats9">Стул смывается и не оставляет следов на стенках унитаза.</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="fats10" name="fats">
-                        <label for="fats10">У меня нет выпадения волос и ломкости ногтей, и/или болей в суставах.</label>
-                    </div>
-                </div>
-
-                <!-- Углеводы -->
-                <div class="category">
-                    <div class="category-title">🍞 Углеводы</div>
-                    <div class="question">
-                        <input type="checkbox" id="carbs1" name="carbs">
-                        <label for="carbs1">Я ограничиваю в рационе продукты, изготовленные из рафинированной муки (оливковое, льняное, подсолнечное, ореховое и т.д.).</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="carbs2" name="carbs">
-                        <label for="carbs2">В моем рационе отсутствуют жидкие углеводы (соки, газировки, фруктовые смузи и т.д.).</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="carbs3" name="carbs">
-                        <label for="carbs3">У меня нет тяги к сладкому.</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="carbs4" name="carbs">
-                        <label for="carbs4">Я контролирую количество цельных злаков (ц/з крупы, ц/з мука, ц/з хлеб и т.д.) в своем рационе.</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="carbs5" name="carbs">
-                        <label for="carbs5">В моем рационе ограничены продукты с естественными сахарами (стевия, фруктоза, фруктозный, кленовый сироп, мед и т.д.).</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="carbs6" name="carbs">
-                        <label for="carbs6">Я не пробуждаюсь ночью от голода.</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="carbs7" name="carbs">
-                        <label for="carbs7">Продукты с высоким содержанием крахмала (картофель, кукуруза, тыква, горох, белый рис и т.д.) присутствуют в моем рационе не чаще 3 раз в неделю.</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="carbs8" name="carbs">
-                        <label for="carbs8">В моем рационе ограничены соусы фабричного производства (кетчупы, бургерные соус, салатные заправки и т.д.).</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="carbs9" name="carbs">
-                        <label for="carbs9">В моем рационе ограничены сладости и выпечка.</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="carbs10" name="carbs">
-                        <label for="carbs10">У меня достаточно высокий уровень энергии.</label>
-                    </div>
-                </div>
-
-                <!-- Клетчатка -->
-                <div class="category">
-                    <div class="category-title">🥗 Клетчатка</div>
-                    <div class="question">
-                        <input type="checkbox" id="fiber1" name="fiber">
-                        <label for="fiber1">Я ежедневно ем клетчатку в виде зелени, цельных круп, овощей.</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="fiber2" name="fiber">
-                        <label for="fiber2">У меня не наступает быстрое чувство голода после еды.</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="fiber3" name="fiber">
-                        <label for="fiber3">Я ем овощи с разным видом обработки каждый день (сырые, тушеные, вареные, запеченные).</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="fiber4" name="fiber">
-                        <label for="fiber4">В моем рационе присутствуют продукты, стимулирующие образование слизи (пектин, лен, овсянка, рис, псиллиум).</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="fiber5" name="fiber">
-                        <label for="fiber5">В моем рационе есть резистентный крахмал (зеленые бананы, отварной картофель в холодном виде, рис в холодном виде).</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="fiber6" name="fiber">
-                        <label for="fiber6">После еды у меня нет вздутия живота и урчания в кишечнике.</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="fiber7" name="fiber">
-                        <label for="fiber7">У меня регулярный стул.</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="fiber8" name="fiber">
-                        <label for="fiber8">У меня нет лишнего веса.</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="fiber9" name="fiber">
-                        <label for="fiber9">У меня нормальный уровень глюкозы в крови.</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="fiber10" name="fiber">
-                        <label for="fiber10">У меня здоровый цвет лица, нет сухости и шелушения кожи.</label>
-                    </div>
-                </div>
-
-                <!-- Разнообразие продуктов питания -->
-                <div class="category">
-                    <div class="category-title">🌈 Разнообразие продуктов питания</div>
-                    <div class="question">
-                        <input type="checkbox" id="variety1" name="variety">
-                        <label for="variety1">Я использую овощи/зелень в свежем виде.</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="variety2" name="variety">
-                        <label for="variety2">Я регулярно употребляю фрукты/ягоды в свежем или замороженном виде.</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="variety3" name="variety">
-                        <label for="variety3">Я регулярно употребляю специи (куркума, имбирь, корица, чеснок, кардамон, кумин, тимьян, гвоздика, фенхель, шафран, паприка, красный и черный перец и т.д.).</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="variety4" name="variety">
-                        <label for="variety4">Я меняю виды круп в своем рационе.</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="variety5" name="variety">
-                        <label for="variety5">Я регулярно употребляю бобовые (фасоль, горох, чечевица, нут и т.д.).</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="variety6" name="variety">
-                        <label for="variety6">Я регулярно употребляю молочные/кисломолочные продукты или их растительные аналоги.</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="variety7" name="variety">
-                        <label for="variety7">Я регулярно употребляю рыбу/морепродукты.</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="variety8" name="variety">
-                        <label for="variety8">Я использую разные виды орехов/семян в рационе в течение недели.</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="variety9" name="variety">
-                        <label for="variety9">Я периодически употребляю ферментированные продукты (квашеная капуста, моченые огурцы, яблоки и пр.).</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="variety10" name="variety">
-                        <label for="variety10">Я пробую новые блюда и продукты, если есть такая возможность.</label>
-                    </div>
-                </div>
-
-                <!-- Организация приёмов пищи -->
-                <div class="category">
-                    <div class="category-title">⏰ Организация приёмов пищи</div>
-                    <div class="question">
-                        <input type="checkbox" id="organization1" name="organization">
-                        <label for="organization1">У меня не больше 3 основных приемов пищи и 2 перекусов.</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="organization2" name="organization">
-                        <label for="organization2">У меня нет постных/разгрузочных/«голодных» дней.</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="organization3" name="organization">
-                        <label for="organization3">У меня есть «праздник живота» раз в неделю/в пару недель.</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="organization4" name="organization">
-                        <label for="organization4">Дневной перерыв между приемами пищи без перекусов составляет не менее 3 часов, а ночной промежуток между ужином и завтраком — не менее 9 часов.</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="organization5" name="organization">
-                        <label for="organization5">Я ем без телефона, телевизора, компьютера и пр., сосредоточившись на еде.</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="organization6" name="organization">
-                        <label for="organization6">Я планирую своё питание заранее.</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="organization7" name="organization">
-                        <label for="organization7">Я составляю список продуктов перед покупкой.</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="organization8" name="organization">
-                        <label for="organization8">У меня нет приёмов пищи на бегу.</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="organization9" name="organization">
-                        <label for="organization9">Я пользуюсь правилом тарелки при составлении приема пищи.</label>
-                    </div>
-                    <div class="question">
-                        <input type="checkbox" id="organization10" name="organization">
-                        <label for="organization10">Я пользуюсь правилом ладони при выборе порции.</label>
-                    </div>
-                </div>
-
-                <div class="button-container">
-                    <button type="button" class="calculate-btn" onclick="calculateBalance()">
-                        🎯 Рассчитать баланс
-                    </button>
-                    <button type="reset" class="reset-btn" onclick="resetForm()">
-                        🔄 Сбросить
-                    </button>
-                </div>
-            </form>
-
-            <div id="results" class="results">
-                <h2>📊 Ваше колесо баланса</h2>
-                <div class="canvas-container">
-                    <canvas id="wheelCanvas" width="600" height="600"></canvas>
-                </div>
-                <div class="scores" id="scoresList"></div>
-            </div>
-        </div>
+  <div class="container">
+    <div class="header">
+      <h1>🎯 Колесо баланса питания: КПП</h1>
+      <p>Ответьте на вопросы и узнайте свой баланс питания</p>
     </div>
 
-    <script>
-        const categories = [
-            { name: 'Вода', color: '#3498db', emoji: '💧' },
-            { name: 'Белок', color: '#e74c3c', emoji: '🥩' },
-            { name: 'Жиры', color: '#f39c12', emoji: '🥑' },
-            { name: 'Углеводы', color: '#2ecc71', emoji: '🍞' },
-            { name: 'Клетчатка', color: '#9b59b6', emoji: '🥗' },
-            { name: 'Разнообразие', color: '#1abc9c', emoji: '🌈' },
-            { name: 'Организация', color: '#e67e22', emoji: '⏰' }
-        ];
+    <div class="content">
+      <form id="balanceForm">
+        <div class="category">
+          <div class="category-title">💧 Вода</div>
+          <div class="question"><input type="checkbox" id="water1" name="water"><label for="water1">Я отличаю жажду от голода.</label></div>
+          <div class="question"><input type="checkbox" id="water2" name="water"><label for="water2">Я начинаю утро с употребления воды.</label></div>
+          <div class="question"><input type="checkbox" id="water3" name="water"><label for="water3">Я практикую навык «тестового глотка».</label></div>
+          <div class="question"><input type="checkbox" id="water4" name="water"><label for="water4">Я посещаю туалет не менее 4 раз за день.</label></div>
+          <div class="question"><input type="checkbox" id="water5" name="water"><label for="water5">Моя моча ненасыщенного цвета.</label></div>
+          <div class="question"><input type="checkbox" id="water6" name="water"><label for="water6">У меня нет сухости кожи.</label></div>
+          <div class="question"><input type="checkbox" id="water7" name="water"><label for="water7">У меня нет отечности глаз утром.</label></div>
+          <div class="question"><input type="checkbox" id="water8" name="water"><label for="water8">У меня нет желания пить после еды.</label></div>
+          <div class="question"><input type="checkbox" id="water9" name="water"><label for="water9">У меня нет сухого стула или запоров.</label></div>
+          <div class="question"><input type="checkbox" id="water10" name="water"><label for="water10">У меня нет сухости слизистых.</label></div>
+        </div>
 
-        // ===== NEW: globals for hover & redraw =====
-        let hoveredSector = null;
-        let lastScores = [];
-        let hoverBound = false;
+        <div class="category">
+          <div class="category-title">🥩 Белок</div>
+          <div class="question"><input type="checkbox" id="protein1" name="protein"><label for="protein1">Я употребляю животный белок.</label></div>
+          <div class="question"><input type="checkbox" id="protein2" name="protein"><label for="protein2">Я употребляю растительный белок.</label></div>
+          <div class="question"><input type="checkbox" id="protein3" name="protein"><label for="protein3">В каждом приеме пищи есть белок.</label></div>
+          <div class="question"><input type="checkbox" id="protein4" name="protein"><label for="protein4">У меня нет газообразования после еды.</label></div>
+          <div class="question"><input type="checkbox" id="protein5" name="protein"><label for="protein5">Красное мясо 1-2 раза в неделю.</label></div>
+          <div class="question"><input type="checkbox" id="protein6" name="protein"><label for="protein6">Я мариную мясо перед приготовлением.</label></div>
+          <div class="question"><input type="checkbox" id="protein7" name="protein"><label for="protein7">Использую щадящие способы приготовления.</label></div>
+          <div class="question"><input type="checkbox" id="protein8" name="protein"><label for="protein8">Нет сонливости после белковой пищи.</label></div>
+          <div class="question"><input type="checkbox" id="protein9" name="protein"><label for="protein9">У меня нет мышечной слабости.</label></div>
+          <div class="question"><input type="checkbox" id="protein10" name="protein"><label for="protein10">Нет тяжести в животе после еды.</label></div>
+        </div>
 
-        // ===== NEW: keep geometry consistent in drawWheel + hover =====
-        const WHEEL_PADDING = 90;      // больше отступ -> подписи не режутся
-        const LABEL_RADIUS_ADD = 30;   // насколько выносить подписи от края круга
+        <div class="category">
+          <div class="category-title">🥑 Жиры</div>
+          <div class="question"><input type="checkbox" id="fats1" name="fats"><label for="fats1">Я ем животные жиры.</label></div>
+          <div class="question"><input type="checkbox" id="fats2" name="fats"><label for="fats2">Нет трансжиров и прогорклых масел.</label></div>
+          <div class="question"><input type="checkbox" id="fats3" name="fats"><label for="fats3">Жирная рыба 2-3 раза в неделю.</label></div>
+          <div class="question"><input type="checkbox" id="fats4" name="fats"><label for="fats4">Готовлю на насыщенных жирах.</label></div>
+          <div class="question"><input type="checkbox" id="fats5" name="fats"><label for="fats5">Добавляю нерафинированные масла.</label></div>
+          <div class="question"><input type="checkbox" id="fats6" name="fats"><label for="fats6">Нет постоянного чувства голода.</label></div>
+          <div class="question"><input type="checkbox" id="fats7" name="fats"><label for="fats7">Нет тяжести после жирной пищи.</label></div>
+          <div class="question"><input type="checkbox" id="fats8" name="fats"><label for="fats8">Нет депрессии/эмоций.</label></div>
+          <div class="question"><input type="checkbox" id="fats9" name="fats"><label for="fats9">Стул смывается без следов.</label></div>
+          <div class="question"><input type="checkbox" id="fats10" name="fats"><label for="fats10">Волосы и ногти в порядке.</label></div>
+        </div>
 
-        function calculateBalance() {
-            const form = document.getElementById('balanceForm');
-            const scores = [];
+        <div class="category">
+          <div class="category-title">🍞 Углеводы</div>
+          <div class="question"><input type="checkbox" id="carbs1" name="carbs"><label for="carbs1">Ограничиваю рафинированную муку.</label></div>
+          <div class="question"><input type="checkbox" id="carbs2" name="carbs"><label for="carbs2">Нет жидких углеводов.</label></div>
+          <div class="question"><input type="checkbox" id="carbs3" name="carbs"><label for="carbs3">Нет тяги к сладкому.</label></div>
+          <div class="question"><input type="checkbox" id="carbs4" name="carbs"><label for="carbs4">Контролирую цельные злаки.</label></div>
+          <div class="question"><input type="checkbox" id="carbs5" name="carbs"><label for="carbs5">Ограничены естественные сахара.</label></div>
+          <div class="question"><input type="checkbox" id="carbs6" name="carbs"><label for="carbs6">Не просыпаюсь ночью от голода.</label></div>
+          <div class="question"><input type="checkbox" id="carbs7" name="carbs"><label for="carbs7">Крахмалистые продукты не чаще 3 раз/нед.</label></div>
+          <div class="question"><input type="checkbox" id="carbs8" name="carbs"><label for="carbs8">Ограничены фабричные соусы.</label></div>
+          <div class="question"><input type="checkbox" id="carbs9" name="carbs"><label for="carbs9">Ограничены сладости и выпечка.</label></div>
+          <div class="question"><input type="checkbox" id="carbs10" name="carbs"><label for="carbs10">Высокий уровень энергии.</label></div>
+        </div>
 
-            // Собираем данные по категориям
-            const categoryNames = ['water', 'protein', 'fats', 'carbs', 'fiber', 'variety', 'organization'];
+        <div class="category">
+          <div class="category-title">🥗 Клетчатка</div>
+          <div class="question"><input type="checkbox" id="fiber1" name="fiber"><label for="fiber1">Ем зелень, овощи, крупы ежедневно.</label></div>
+          <div class="question"><input type="checkbox" id="fiber2" name="fiber"><label for="fiber2">Нет быстрого голода после еды.</label></div>
+          <div class="question"><input type="checkbox" id="fiber3" name="fiber"><label for="fiber3">Овощи разной обработки каждый день.</label></div>
+          <div class="question"><input type="checkbox" id="fiber4" name="fiber"><label for="fiber4">Продукты со слизью (лен, овсянка и т.д.).</label></div>
+          <div class="question"><input type="checkbox" id="fiber5" name="fiber"><label for="fiber5">Резистентный крахмал в рационе.</label></div>
+          <div class="question"><input type="checkbox" id="fiber6" name="fiber"><label for="fiber6">Нет вздутия после еды.</label></div>
+          <div class="question"><input type="checkbox" id="fiber7" name="fiber"><label for="fiber7">Регулярный стул.</label></div>
+          <div class="question"><input type="checkbox" id="fiber8" name="fiber"><label for="fiber8">Нет лишнего веса.</label></div>
+          <div class="question"><input type="checkbox" id="fiber9" name="fiber"><label for="fiber9">Нормальный уровень глюкозы.</label></div>
+          <div class="question"><input type="checkbox" id="fiber10" name="fiber"><label for="fiber10">Здоровый цвет лица.</label></div>
+        </div>
 
-            categoryNames.forEach(cat => {
-                const checkboxes = form.querySelectorAll(`input[name="${cat}"]:checked`);
-                scores.push(checkboxes.length);
-            });
+        <div class="category">
+          <div class="category-title">🌈 Разнообразие</div>
+          <div class="question"><input type="checkbox" id="variety1" name="variety"><label for="variety1">Овощи/зелень в свежем виде.</label></div>
+          <div class="question"><input type="checkbox" id="variety2" name="variety"><label for="variety2">Фрукты/ягоды регулярно.</label></div>
+          <div class="question"><input type="checkbox" id="variety3" name="variety"><label for="variety3">Регулярно употребляю специи.</label></div>
+          <div class="question"><input type="checkbox" id="variety4" name="variety"><label for="variety4">Меняю виды круп.</label></div>
+          <div class="question"><input type="checkbox" id="variety5" name="variety"><label for="variety5">Регулярно ем бобовые.</label></div>
+          <div class="question"><input type="checkbox" id="variety6" name="variety"><label for="variety6">Молочка или аналоги регулярно.</label></div>
+          <div class="question"><input type="checkbox" id="variety7" name="variety"><label for="variety7">Рыба/морепродукты регулярно.</label></div>
+          <div class="question"><input type="checkbox" id="variety8" name="variety"><label for="variety8">Разные орехи/семена.</label></div>
+          <div class="question"><input type="checkbox" id="variety9" name="variety"><label for="variety9">Ферментированные продукты.</label></div>
+          <div class="question"><input type="checkbox" id="variety10" name="variety"><label for="variety10">Пробую новые блюда.</label></div>
+        </div>
 
-            // Отображаем результаты
-            displayResults(scores);
-          // === Сохранение в Firebase ===
-          firebase.auth().onAuthStateChanged(function(user) {
-          
-              if (!user) {
-                  console.log("Нет пользователя — не сохраняем");
-                  return;
-              }
-          
-              const scoreObject = {
-                  water: scores[0],
-                  protein: scores[1],
-                  fats: scores[2],
-                  carbs: scores[3],
-                  fiber: scores[4],
-                  variety: scores[5],
-                  organization: scores[6]
-              };
-          
-              firebase.firestore()
-                  .collection("users")
-                  .doc(user.uid)
-                  .collection("nutritionWheel")
-                  .add({
-                      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                      scores: scoreObject
-                  })
-                  .then(() => {
-                      console.log("Колесо сохранено");
-                  })
-                  .catch((error) => {
-                      console.error("Ошибка сохранения:", error);
-                  });
-          
-          });
-  
+        <div class="category">
+          <div class="category-title">⏰ Организация</div>
+          <div class="question"><input type="checkbox" id="organization1" name="organization"><label for="organization1">Не больше 3 приемов и 2 перекусов.</label></div>
+          <div class="question"><input type="checkbox" id="organization2" name="organization"><label for="organization2">Нет голодных дней.</label></div>
+          <div class="question"><input type="checkbox" id="organization3" name="organization"><label for="organization3">Есть «праздник живота» раз в 1-2 нед.</label></div>
+          <div class="question"><input type="checkbox" id="organization4" name="organization"><label for="organization4">Перерывы: 3ч днем, 9ч ночью.</label></div>
+          <div class="question"><input type="checkbox" id="organization5" name="organization"><label for="organization5">Ем без гаджетов.</label></div>
+          <div class="question"><input type="checkbox" id="organization6" name="organization"><label for="organization6">Планирую питание заранее.</label></div>
+          <div class="question"><input type="checkbox" id="organization7" name="organization"><label for="organization7">Список продуктов перед покупкой.</label></div>
+          <div class="question"><input type="checkbox" id="organization8" name="organization"><label for="organization8">Нет еды на бегу.</label></div>
+          <div class="question"><input type="checkbox" id="organization9" name="organization"><label for="organization9">Правило тарелки.</label></div>
+          <div class="question"><input type="checkbox" id="organization10" name="organization"><label for="organization10">Правило ладони.</label></div>
+        </div>
 
-    
+        <div class="button-container">
+          <button type="button" class="calculate-btn" onclick="calculateBalance()">
+            🎯 Рассчитать баланс
+          </button>
+          <button type="reset" class="reset-btn" onclick="resetForm()">
+            🔄 Сбросить
+          </button>
+        </div>
+      </form>
 
-        // ===== NEW: utilities =====
-        function drawMultilineText(ctx, text, x, y, maxWidth, lineHeight) {
-            const words = text.split(' ');
-            let line = '';
-            const lines = [];
+      <div id="results" class="results">
+        <h2>📊 Ваше колесо баланса</h2>
+        <div class="canvas-container">
+          <canvas id="wheelCanvas" width="600" height="600"></canvas>
+        </div>
+        <div class="scores" id="scoresList"></div>
+      </div>
+    </div>
+  </div>
 
-            for (let n = 0; n < words.length; n++) {
-                const testLine = line + words[n] + ' ';
-                const metrics = ctx.measureText(testLine);
-                if (metrics.width > maxWidth && n > 0) {
-                    lines.push(line.trim());
-                    line = words[n] + ' ';
-                } else {
-                    line = testLine;
-                }
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+  <script src="config.js"></script>
+  <script src="firebase-init.js"></script>
+  <script src="auth.js"></script>
+
+  <script>
+    // ===== Глобальные переменные =====
+    const categories = [
+      { name: 'Вода', color: '#3498db', emoji: '💧' },
+      { name: 'Белок', color: '#e74c3c', emoji: '🥩' },
+      { name: 'Жиры', color: '#f39c12', emoji: '🥑' },
+      { name: 'Углеводы', color: '#2ecc71', emoji: '🍞' },
+      { name: 'Клетчатка', color: '#9b59b6', emoji: '🥗' },
+      { name: 'Разнообразие', color: '#1abc9c', emoji: '🌈' },
+      { name: 'Организация', color: '#e67e22', emoji: '⏰' }
+    ];
+
+    let hoveredSector = null;
+    let lastScores = [];
+    let hoverBound = false;
+
+    const WHEEL_PADDING = 90;
+    const LABEL_RADIUS_ADD = 30;
+
+    // Глобальный слушатель авторизации (достаточно одного)
+    if (typeof firebase !== 'undefined') {
+        firebase.auth().onAuthStateChanged(function(user) {
+            if (user) {
+                console.log("Авторизован:", user.uid);
+                window.currentUser = user; 
+            } else {
+                console.log("Пользователь не авторизован");
+                window.currentUser = null;
             }
-            lines.push(line.trim());
-
-            lines.forEach((l, i) => {
-                ctx.fillText(l, x, y + i * lineHeight);
-            });
-
-            return lines.length;
-        }
-
-        function shadeColor(color, percent) {
-            const f = parseInt(color.slice(1), 16);
-            const t = percent < 0 ? 0 : 255;
-            const p = Math.abs(percent) / 100;
-            const R = f >> 16;
-            const G = (f >> 8) & 0x00FF;
-            const B = f & 0x0000FF;
-
-            return "#" + (
-                0x1000000 +
-                (Math.round((t - R) * p) + R) * 0x10000 +
-                (Math.round((t - G) * p) + G) * 0x100 +
-                (Math.round((t - B) * p) + B)
-            ).toString(16).slice(1);
-        }
-
-        function displayResults(scores) {
-            const resultsDiv = document.getElementById('results');
-            const canvas = document.getElementById('wheelCanvas');
-            const ctx = canvas.getContext('2d');
-
-            // Показываем секцию результатов
-            resultsDiv.classList.add('show');
-            resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-            // ===== NEW: store for hover redraw =====
-            lastScores = scores.slice();
-
-            // Рисуем колесо баланса
-            drawWheel(ctx, canvas, scores);
-
-            // ===== NEW: hover events (bind once) =====
-            setupWheelHover(canvas, ctx);
-
-            // Отображаем детальные результаты
-            displayDetailedScores(scores);
-        }
-
-        // ===== NEW: hover handler (MUST be outside drawWheel) =====
-        function setupWheelHover(canvas, ctx) {
-            if (hoverBound) return;
-            hoverBound = true;
-
-            canvas.addEventListener('mousemove', (e) => {
-                const rect = canvas.getBoundingClientRect();
-                const centerX = canvas.width / 2;
-                const centerY = canvas.height / 2;
-                const maxRadius = Math.min(centerX, centerY) - WHEEL_PADDING;
-
-                const x = e.clientX - rect.left - centerX;
-                const y = e.clientY - rect.top - centerY;
-
-                const distance = Math.sqrt(x * x + y * y);
-
-                // Вне круга — ничего не подсвечиваем
-                if (distance > maxRadius) {
-                    if (hoveredSector !== null) {
-                        hoveredSector = null;
-                        drawWheel(ctx, canvas, lastScores);
-                    }
-                    return;
-                }
-
-                // угол: "верх" как старт
-                let angle = Math.atan2(y, x) + Math.PI / 2;
-                if (angle < 0) angle += Math.PI * 2;
-
-                const numCategories = categories.length;
-                const sector = Math.floor(angle / (Math.PI * 2 / numCategories));
-
-                if (hoveredSector !== sector) {
-                    hoveredSector = sector;
-                    drawWheel(ctx, canvas, lastScores);
-                }
-            });
-
-            canvas.addEventListener('mouseleave', () => {
-                if (hoveredSector !== null) {
-                    hoveredSector = null;
-                    drawWheel(ctx, canvas, lastScores);
-                }
-            });
-        }
-
-        function drawWheel(ctx, canvas, scores) {
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
-
-            // ===== CHANGED: padding-based radius so labels don't clip =====
-            const maxRadius = Math.min(centerX, centerY) - WHEEL_PADDING;
-
-            const numCategories = categories.length;
-
-            // Очищаем canvas
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Рисуем концентрические круги (сетка)
-            ctx.strokeStyle = '#e0e0e0';
-            ctx.lineWidth = 1;
-            for (let i = 1; i <= 10; i++) {
-                ctx.beginPath();
-                ctx.arc(centerX, centerY, (maxRadius / 10) * i, 0, 2 * Math.PI);
-                ctx.stroke();
-            }
-
-            // Рисуем оси для каждой категории
-            ctx.strokeStyle = '#d0d0d0';
-            ctx.lineWidth = 1;
-            for (let i = 0; i < numCategories; i++) {
-                const angle = (Math.PI * 2 * i) / numCategories - Math.PI / 2;
-                ctx.beginPath();
-                ctx.moveTo(centerX, centerY);
-                ctx.lineTo(
-                    centerX + maxRadius * Math.cos(angle),
-                    centerY + maxRadius * Math.sin(angle)
-                );
-                ctx.stroke();
-            }
-
-            // Рисуем заполненные сектора
-            for (let i = 0; i < numCategories; i++) {
-                const score = scores[i];
-                const radius = (maxRadius / 10) * score;
-                const startAngle = (Math.PI * 2 * i) / numCategories - Math.PI / 2;
-                const endAngle = (Math.PI * 2 * (i + 1)) / numCategories - Math.PI / 2;
-
-                // ===== CHANGED: hover shading =====
-                ctx.fillStyle = (hoveredSector === i)
-                    ? shadeColor(categories[i].color, -15)
-                    : categories[i].color;
-
-                ctx.beginPath();
-                ctx.moveTo(centerX, centerY);
-                ctx.arc(centerX, centerY, radius, startAngle, endAngle);
-                ctx.closePath();
-                ctx.fill();
-            }
-
-            // ===== CHANGED: labels near sectors (mid-angle) + wrap + value =====
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-
-            for (let i = 0; i < numCategories; i++) {
-                const startAngle = (Math.PI * 2 * i) / numCategories - Math.PI / 2;
-                const endAngle = (Math.PI * 2 * (i + 1)) / numCategories - Math.PI / 2;
-                const midAngle = (startAngle + endAngle) / 2;
-
-                const labelRadius = maxRadius + LABEL_RADIUS_ADD;
-                const x = centerX + labelRadius * Math.cos(midAngle);
-                const y = centerY + labelRadius * Math.sin(midAngle);
-
-                const title = `${categories[i].emoji} ${categories[i].name}`;
-                const value = `${scores[i]}/10`;
-
-                const maxTextWidth = 120;
-                const lineHeight = 16;
-
-                ctx.font = 'bold 14px Arial';
-                const estimatedLines = Math.max(1, Math.ceil(ctx.measureText(title).width / maxTextWidth));
-                const totalHeight = estimatedLines * lineHeight + 18;
-
-                // фон под подпись
-                ctx.fillStyle = 'rgba(255,255,255,0.92)';
-                ctx.fillRect(
-                    x - maxTextWidth / 2 - 8,
-                    y - totalHeight / 2 - 8,
-                    maxTextWidth + 16,
-                    totalHeight + 16
-                );
-
-                // заголовок (с переносом)
-                ctx.fillStyle = '#2c3e50';
-                drawMultilineText(ctx, title, x, y - 8, maxTextWidth, lineHeight);
-
-                // значение категории
-                ctx.font = 'bold 13px Arial';
-                ctx.fillStyle = categories[i].color;
-                ctx.fillText(value, x, y + totalHeight / 2 - 12);
-            }
-        }
-
-        function displayDetailedScores(scores) {
-            const scoresList = document.getElementById('scoresList');
-            scoresList.innerHTML = '';
-
-            categories.forEach((cat, index) => {
-                const scoreItem = document.createElement('div');
-                scoreItem.className = 'score-item';
-                scoreItem.innerHTML = `
-                    <h3>${cat.emoji} ${cat.name}</h3>
-                    <div class="score" style="color: ${cat.color}">${scores[index]}/10</div>
-                `;
-                scoresList.appendChild(scoreItem);
-            });
-        }
-
-        function resetForm() {
-            document.getElementById('balanceForm').reset();
-            document.getElementById('results').classList.remove('show');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-
-            // ===== NEW: reset hover state =====
-            hoveredSector = null;
-            lastScores = [];
-        }
-
-        // Анимация появления элементов при загрузке
-        window.addEventListener('load', () => {
-            document.querySelector('.container').style.opacity = '0';
-            document.querySelector('.container').style.transform = 'translateY(20px)';
-
-            setTimeout(() => {
-                document.querySelector('.container').style.transition = 'all 0.6s ease';
-                document.querySelector('.container').style.opacity = '1';
-                document.querySelector('.container').style.transform = 'translateY(0)';
-            }, 100);
         });
-    </script>
-
-
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-
-
-<!-- Конфигурация и инициализация -->
-<script src="config.js"></script>
-<script src="firebase-init.js"></script>
-<script src="auth.js"></script>
-<script>
-  firebase.auth().onAuthStateChanged(function(user) {
-    if (user) {
-      console.log("Авторизован:", user.uid);
-      window.currentUser = user; // сохраняем глобально
-    } else {
-      console.log("Ждём авторизацию...");
-      // НЕ редиректим сразу
     }
-  });
-</script>
 
+    function calculateBalance() {
+      const form = document.getElementById('balanceForm');
+      const scores = [];
+
+      // Собираем данные
+      const categoryNames = ['water', 'protein', 'fats', 'carbs', 'fiber', 'variety', 'organization'];
+      
+      categoryNames.forEach(cat => {
+        const checkboxes = form.querySelectorAll(`input[name="${cat}"]:checked`);
+        scores.push(checkboxes.length);
+      });
+
+      // Отображаем результаты
+      displayResults(scores);
+
+      // === Сохранение в Firebase (ОПТИМИЗИРОВАНО) ===
+      if (typeof firebase === 'undefined') {
+          console.error("Firebase не загружен");
+          return;
+      }
+
+      // Используем текущее состояние авторизации, а не создаем новый листенер
+      const user = firebase.auth().currentUser || window.currentUser;
+
+      if (!user) {
+        console.log("Нет пользователя — данные не сохраняем в БД");
+        return;
+      }
+
+      const scoreObject = {
+        water: scores[0],
+        protein: scores[1],
+        fats: scores[2],
+        carbs: scores[3],
+        fiber: scores[4],
+        variety: scores[5],
+        organization: scores[6]
+      };
+
+      firebase.firestore()
+        .collection("users")
+        .doc(user.uid)
+        .collection("nutritionWheel")
+        .add({
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          scores: scoreObject
+        })
+        .then(() => {
+          console.log("Колесо успешно сохранено в Firestore");
+        })
+        .catch((error) => {
+          console.error("Ошибка сохранения:", error);
+        });
+    }
+
+    // ===== Утилиты для Canvas =====
+    function drawMultilineText(ctx, text, x, y, maxWidth, lineHeight) {
+      const words = text.split(' ');
+      let line = '';
+      const lines = [];
+
+      for (let n = 0; n < words.length; n++) {
+        const testLine = line + words[n] + ' ';
+        const metrics = ctx.measureText(testLine);
+        if (metrics.width > maxWidth && n > 0) {
+          lines.push(line.trim());
+          line = words[n] + ' ';
+        } else {
+          line = testLine;
+        }
+      }
+      lines.push(line.trim());
+
+      lines.forEach((l, i) => {
+        ctx.fillText(l, x, y + i * lineHeight);
+      });
+
+      return lines.length;
+    }
+
+    function shadeColor(color, percent) {
+      const f = parseInt(color.slice(1), 16);
+      const t = percent < 0 ? 0 : 255;
+      const p = Math.abs(percent) / 100;
+      const R = f >> 16;
+      const G = (f >> 8) & 0x00FF;
+      const B = f & 0x0000FF;
+      return "#" + (
+        0x1000000 +
+        (Math.round((t - R) * p) + R) * 0x10000 +
+        (Math.round((t - G) * p) + G) * 0x100 +
+        (Math.round((t - B) * p) + B)
+      ).toString(16).slice(1);
+    }
+
+    function displayResults(scores) {
+      const resultsDiv = document.getElementById('results');
+      const canvas = document.getElementById('wheelCanvas');
+      const ctx = canvas.getContext('2d');
+
+      resultsDiv.classList.add('show');
+      resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+      lastScores = scores.slice();
+      drawWheel(ctx, canvas, scores);
+      setupWheelHover(canvas, ctx);
+      displayDetailedScores(scores);
+    }
+
+    function setupWheelHover(canvas, ctx) {
+      if (hoverBound) return;
+      hoverBound = true;
+
+      canvas.addEventListener('mousemove', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const maxRadius = Math.min(centerX, centerY) - WHEEL_PADDING;
+
+        const x = e.clientX - rect.left - centerX;
+        const y = e.clientY - rect.top - centerY;
+        const distance = Math.sqrt(x * x + y * y);
+
+        if (distance > maxRadius) {
+          if (hoveredSector !== null) {
+            hoveredSector = null;
+            drawWheel(ctx, canvas, lastScores);
+          }
+          return;
+        }
+
+        let angle = Math.atan2(y, x) + Math.PI / 2;
+        if (angle < 0) angle += Math.PI * 2;
+
+        const numCategories = categories.length;
+        const sector = Math.floor(angle / (Math.PI * 2 / numCategories));
+
+        if (hoveredSector !== sector) {
+          hoveredSector = sector;
+          drawWheel(ctx, canvas, lastScores);
+        }
+      });
+
+      canvas.addEventListener('mouseleave', () => {
+        if (hoveredSector !== null) {
+          hoveredSector = null;
+          drawWheel(ctx, canvas, lastScores);
+        }
+      });
+    }
+
+    function drawWheel(ctx, canvas, scores) {
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      const maxRadius = Math.min(centerX, centerY) - WHEEL_PADDING;
+      const numCategories = categories.length;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Сетка
+      ctx.strokeStyle = '#e0e0e0';
+      ctx.lineWidth = 1;
+      for (let i = 1; i <= 10; i++) {
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, (maxRadius / 10) * i, 0, 2 * Math.PI);
+        ctx.stroke();
+      }
+
+      // Оси
+      ctx.strokeStyle = '#d0d0d0';
+      for (let i = 0; i < numCategories; i++) {
+        const angle = (Math.PI * 2 * i) / numCategories - Math.PI / 2;
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.lineTo(centerX + maxRadius * Math.cos(angle), centerY + maxRadius * Math.sin(angle));
+        ctx.stroke();
+      }
+
+      // Сектора
+      for (let i = 0; i < numCategories; i++) {
+        const score = scores[i];
+        const radius = (maxRadius / 10) * score;
+        const startAngle = (Math.PI * 2 * i) / numCategories - Math.PI / 2;
+        const endAngle = (Math.PI * 2 * (i + 1)) / numCategories - Math.PI / 2;
+
+        ctx.fillStyle = (hoveredSector === i) ? shadeColor(categories[i].color, -15) : categories[i].color;
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      // Подписи
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      for (let i = 0; i < numCategories; i++) {
+        const startAngle = (Math.PI * 2 * i) / numCategories - Math.PI / 2;
+        const endAngle = (Math.PI * 2 * (i + 1)) / numCategories - Math.PI / 2;
+        const midAngle = (startAngle + endAngle) / 2;
+        const labelRadius = maxRadius + LABEL_RADIUS_ADD;
+        
+        const x = centerX + labelRadius * Math.cos(midAngle);
+        const y = centerY + labelRadius * Math.sin(midAngle);
+
+        const title = `${categories[i].emoji} ${categories[i].name}`;
+        const value = `${scores[i]}/10`;
+
+        const maxTextWidth = 120;
+        const lineHeight = 16;
+
+        ctx.font = 'bold 14px Arial';
+        const estimatedLines = Math.max(1, Math.ceil(ctx.measureText(title).width / maxTextWidth));
+        const totalHeight = estimatedLines * lineHeight + 18;
+
+        ctx.fillStyle = 'rgba(255,255,255,0.92)';
+        ctx.fillRect(x - maxTextWidth/2 - 8, y - totalHeight/2 - 8, maxTextWidth + 16, totalHeight + 16);
+
+        ctx.fillStyle = '#2c3e50';
+        drawMultilineText(ctx, title, x, y - 8, maxTextWidth, lineHeight);
+
+        ctx.font = 'bold 13px Arial';
+        ctx.fillStyle = categories[i].color;
+        ctx.fillText(value, x, y + totalHeight/2 - 12);
+      }
+    }
+
+    function displayDetailedScores(scores) {
+      const scoresList = document.getElementById('scoresList');
+      scoresList.innerHTML = '';
+      categories.forEach((cat, index) => {
+        const scoreItem = document.createElement('div');
+        scoreItem.className = 'score-item';
+        scoreItem.innerHTML = `<h3>${cat.emoji} ${cat.name}</h3><div class="score" style="color: ${cat.color}">${scores[index]}/10</div>`;
+        scoresList.appendChild(scoreItem);
+      });
+    }
+
+    function resetForm() {
+      document.getElementById('balanceForm').reset();
+      document.getElementById('results').classList.remove('show');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      hoveredSector = null;
+      lastScores = [];
+    }
+
+    // Анимация при загрузке
+    window.addEventListener('load', () => {
+      const container = document.querySelector('.container');
+      if(container) {
+        container.style.transition = 'all 0.6s ease';
+        container.style.opacity = '1';
+        container.style.transform = 'translateY(0)';
+      }
+    });
+  </script>
 </body>
 </html>
