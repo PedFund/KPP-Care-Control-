@@ -1,11 +1,10 @@
 // wheel-integration.js
 (function () {
 
-  function tryAddButton() {
+  function addWheelButton() {
     const formContainer = document.getElementById('measurements-form');
     if (!formContainer) return;
 
-    // если уже добавлена — не дублируем
     if (document.getElementById('openWheelBtn')) return;
 
     const btn = document.createElement('button');
@@ -21,13 +20,18 @@
     formContainer.prepend(btn);
   }
 
-  // 🔁 Проверяем каждые 500 мс, пока форма не появится
-  const interval = setInterval(() => {
+  // Наблюдаем за изменениями DOM
+  const observer = new MutationObserver(() => {
     const formContainer = document.getElementById('measurements-form');
     if (formContainer) {
-      tryAddButton();
-      clearInterval(interval);
+      addWheelButton();
     }
-  }, 500);
+  });
+
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true
+  });
 
 })();
+
