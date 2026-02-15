@@ -234,7 +234,6 @@
 
     <div class="content">
       <form id="balanceForm">
-        <!-- Вода -->
         <div class="category">
           <div class="category-title">💧 Вода</div>
           <div class="question"><input type="checkbox" id="water1" name="water"><label for="water1">Я отличаю жажду от голода.</label></div>
@@ -249,7 +248,6 @@
           <div class="question"><input type="checkbox" id="water10" name="water"><label for="water10">У меня нет сухости слизистых, заложенности носа (особенно по утрам).</label></div>
         </div>
 
-        <!-- Белок -->
         <div class="category">
           <div class="category-title">🥩 Белок</div>
           <div class="question"><input type="checkbox" id="protein1" name="protein"><label for="protein1">Я употребляю животный белок.</label></div>
@@ -264,7 +262,6 @@
           <div class="question"><input type="checkbox" id="protein10" name="protein"><label for="protein10">У меня нет тяжести в животе после еды и симптомов дефицита белка.</label></div>
         </div>
 
-        <!-- Жиры -->
         <div class="category">
           <div class="category-title">🥑 Жиры</div>
           <div class="question"><input type="checkbox" id="fats1" name="fats"><label for="fats1">Я ем животные жиры (жирное мясо, сливочное масло, яйца, сало и т.д.).</label></div>
@@ -279,7 +276,6 @@
           <div class="question"><input type="checkbox" id="fats10" name="fats"><label for="fats10">У меня нет выпадения волос и ломкости ногтей, и/или болей в суставах.</label></div>
         </div>
 
-        <!-- Углеводы -->
         <div class="category">
           <div class="category-title">🍞 Углеводы</div>
           <div class="question"><input type="checkbox" id="carbs1" name="carbs"><label for="carbs1">Я ограничиваю в рационе продукты, изготовленные из рафинированной муки (оливковое, льняное, подсолнечное, ореховое и т.д.).</label></div>
@@ -294,7 +290,6 @@
           <div class="question"><input type="checkbox" id="carbs10" name="carbs"><label for="carbs10">У меня достаточно высокий уровень энергии.</label></div>
         </div>
 
-        <!-- Клетчатка -->
         <div class="category">
           <div class="category-title">🥗 Клетчатка</div>
           <div class="question"><input type="checkbox" id="fiber1" name="fiber"><label for="fiber1">Я ежедневно ем клетчатку в виде зелени, цельных круп, овощей.</label></div>
@@ -309,7 +304,6 @@
           <div class="question"><input type="checkbox" id="fiber10" name="fiber"><label for="fiber10">У меня здоровый цвет лица, нет сухости и шелушения кожи.</label></div>
         </div>
 
-        <!-- Разнообразие -->
         <div class="category">
           <div class="category-title">🌈 Разнообразие продуктов питания</div>
           <div class="question"><input type="checkbox" id="variety1" name="variety"><label for="variety1">Я использую овощи/зелень в свежем виде.</label></div>
@@ -324,7 +318,6 @@
           <div class="question"><input type="checkbox" id="variety10" name="variety"><label for="variety10">Я пробую новые блюда и продукты, если есть такая возможность.</label></div>
         </div>
 
-        <!-- Организация -->
         <div class="category">
           <div class="category-title">⏰ Организация приёмов пищи</div>
           <div class="question"><input type="checkbox" id="organization1" name="organization"><label for="organization1">У меня не больше 3 основных приемов пищи и 2 перекусов.</label></div>
@@ -351,23 +344,20 @@
           <canvas id="wheelCanvas" width="600" height="600"></canvas>
         </div>
         <div class="scores" id="scoresList"></div>
-    <div style="text-align:center; margin-top:20px;">
-  <button id="saveWheelBtn" class="calculate-btn" style="padding:12px 40px; font-size:1em;">
-    💾 Сохранить результаты
-  </button>
-</div>
-
+        <div style="text-align:center; margin-top:20px;">
+          <button id="saveWheelBtn" class="calculate-btn" style="padding:12px 40px; font-size:1em;" onclick="saveWheelResults()">
+            💾 Сохранить результаты
+          </button>
+        </div>
       </div>
 
     </div>
   </div>
 
-  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
-  <!-- Конфигурация и инициализация -->
   <script src="config.js"></script>
   <script src="firebase-init.js"></script>
   <script src="auth.js"></script>
@@ -410,34 +400,8 @@
         scores.push(checkboxes.length);
       });
 
+      // Только отображаем результаты. Сохранение теперь по кнопке "Сохранить".
       displayResults(scores);
-
-      // === save to Firestore ===
-      if (!AUTH_READY_USER) {
-        console.log("Нет пользователя — не сохраняем");
-        return;
-      }
-
-      const scoreObject = {
-        water: scores[0],
-        protein: scores[1],
-        fats: scores[2],
-        carbs: scores[3],
-        fiber: scores[4],
-        variety: scores[5],
-        organization: scores[6]
-      };
-
-      firebase.firestore()
-        .collection("users")
-        .doc(AUTH_READY_USER.uid)
-        .collection("nutritionWheel")
-        .add({
-          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-          scores: scoreObject
-        })
-        .then(() => console.log("Колесо сохранено"))
-        .catch((e) => console.error("Ошибка сохранения:", e));
     }
 
     function drawMultilineText(ctx, text, x, y, maxWidth, lineHeight) {
@@ -631,6 +595,47 @@
 
       hoveredSector = null;
       lastScores = [];
+    }
+
+    function saveWheelResults() {
+        const user = firebase.auth().currentUser;
+
+        if (!user) {
+            alert("Вы не авторизованы. Перезайдите в приложение.");
+            return;
+        }
+
+        if (!lastScores || lastScores.length === 0) {
+            alert("Сначала рассчитайте колесо.");
+            return;
+        }
+
+        const scoreObject = {
+            water: lastScores[0],
+            protein: lastScores[1],
+            fats: lastScores[2],
+            carbs: lastScores[3],
+            fiber: lastScores[4],
+            variety: lastScores[5],
+            organization: lastScores[6]
+        };
+
+        firebase.firestore()
+            .collection("users")
+            .doc(user.uid)
+            .collection("nutritionWheel")
+            .add({
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                scores: scoreObject
+            })
+            .then(() => {
+                alert("Колесо успешно сохранено");
+                console.log("Колесо сохранено");
+            })
+            .catch((error) => {
+                console.error("Ошибка сохранения:", error);
+                alert("Ошибка сохранения. Смотрите консоль.");
+            });
     }
 
     window.addEventListener('load', () => {
