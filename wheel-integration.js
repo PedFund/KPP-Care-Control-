@@ -2,9 +2,14 @@
 (function () {
 
   function addWheelButton() {
-    const formContainer = document.getElementById('measurements-form');
-    if (!formContainer) return;
 
+    // Ищем заголовок "Измерения за сегодня"
+    const headers = Array.from(document.querySelectorAll('h2, h3'));
+    const measurementsHeader = headers.find(h =>
+      h.textContent.includes('Измерения за сегодня')
+    );
+
+    if (!measurementsHeader) return;
     if (document.getElementById('openWheelBtn')) return;
 
     const btn = document.createElement('button');
@@ -17,16 +22,11 @@
       window.location.href = '/wheel.html';
     });
 
-    formContainer.prepend(btn);
+    // Вставляем прямо перед заголовком
+    measurementsHeader.parentNode.insertBefore(btn, measurementsHeader);
   }
 
-  // Наблюдаем за изменениями DOM
-  const observer = new MutationObserver(() => {
-    const formContainer = document.getElementById('measurements-form');
-    if (formContainer) {
-      addWheelButton();
-    }
-  });
+  const observer = new MutationObserver(addWheelButton);
 
   observer.observe(document.body, {
     childList: true,
@@ -34,4 +34,3 @@
   });
 
 })();
-
