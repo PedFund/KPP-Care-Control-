@@ -45,6 +45,13 @@
 <script src="config.js"></script>
 <script src="firebase-init.js"></script>
 <script src="auth.js"></script>
+<script>
+  window.addEventListener('load', () => {
+    const user = firebase.auth().currentUser;
+    console.log("USER:", user);
+    alert(user ? "Пользователь найден" : "Пользователь НЕ найден");
+  });
+</script>
 
 </body>
 </html>
