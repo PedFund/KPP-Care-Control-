@@ -49,14 +49,14 @@
 <script src="auth.js"></script>
 <script>
   firebase.auth().onAuthStateChanged(function(user) {
-    if (user) {
-      console.log("Пользователь найден:", user.uid);
-      alert("Пользователь найден");
+    if (!user) {
+      // если нет авторизации — возвращаем на главную
+      window.location.href = "/";
     } else {
-      console.log("Пользователь НЕ найден");
-      alert("Пользователь НЕ найден");
+      console.log("Авторизован:", user.uid);
     }
   });
+</script>
 </script>
 </body>
 </html>
