@@ -48,12 +48,15 @@
 <script src="firebase-init.js"></script>
 <script src="auth.js"></script>
 <script>
-  window.addEventListener('load', () => {
-    const user = firebase.auth().currentUser;
-    console.log("USER:", user);
-    alert(user ? "Пользователь найден" : "Пользователь НЕ найден");
+  firebase.auth().onAuthStateChanged(function(user) {
+    if (user) {
+      console.log("Пользователь найден:", user.uid);
+      alert("Пользователь найден");
+    } else {
+      console.log("Пользователь НЕ найден");
+      alert("Пользователь НЕ найден");
+    }
   });
 </script>
-
 </body>
 </html>
