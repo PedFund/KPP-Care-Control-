@@ -357,8 +357,8 @@
   <script src="firebase-init.js"></script>
   <script src="auth.js"></script>
 
-  <script>
-    // ===== Глобальные переменные =====
+<script>
+    // ===== Глобальные настройки =====
     const categories = [
       { name: 'Вода', color: '#3498db', emoji: '💧' },
       { name: 'Белок', color: '#e74c3c', emoji: '🥩' },
@@ -372,28 +372,36 @@
     let hoveredSector = null;
     let lastScores = [];
     let hoverBound = false;
+    let currentUser = null; // Храним юзера здесь
 
     const WHEEL_PADDING = 90;
     const LABEL_RADIUS_ADD = 30;
 
-    // Глобальный слушатель авторизации (достаточно одного)
-    if (typeof firebase !== 'undefined') {
-        firebase.auth().onAuthStateChanged(function(user) {
-            if (user) {
-                console.log("Авторизован:", user.uid);
-                window.currentUser = user; 
-            } else {
-                console.log("Пользователь не авторизован");
-                window.currentUser = null;
-            }
-        });
-    }
+    // ===== 1. Слушаем авторизацию (Самое важное) =====
+    // Этот код сработает сам, как только Firebase "проснется"
+    firebase.auth().onAuthStateChanged(function(user) {
+        if (user) {
+            console.log("✅ Сессия подхвачена! ID:", user.uid);
+            currentUser = user;
+            
+            // Визуально покажем, что мы узнали юзера (можно убрать потом)
+            const headerP = document.querySelector('.header p');
+            headerP.innerHTML = `Привет, <b>${user.email || 'Пользователь'}</b>! Твой ID подтвержден.`;
+            headerP.style.color = "#dff9fb";
+        } else {
+            console.warn("⛔ Сессия не найдена. Вы точно вошли в основном приложении?");
+            currentUser = null;
+            
+            const headerP = document.querySelector('.header p');
+            headerP.innerHTML = `⚠️ Вы не авторизованы. Результаты не сохранятся.`;
+            headerP.style.color = "#ffcccc";
+        }
+    });
 
+    // ===== 2. Функция расчета и сохранения =====
     function calculateBalance() {
       const form = document.getElementById('balanceForm');
       const scores = [];
-
-      // Собираем данные
       const categoryNames = ['water', 'protein', 'fats', 'carbs', 'fiber', 'variety', 'organization'];
       
       categoryNames.forEach(cat => {
@@ -401,55 +409,49 @@
         scores.push(checkboxes.length);
       });
 
-      // Отображаем результаты
+      // Рисуем колесо
       displayResults(scores);
 
-      // === Сохранение в Firebase (ОПТИМИЗИРОВАНО) ===
-      if (typeof firebase === 'undefined') {
-          console.error("Firebase не загружен");
+      // Проверяем авторизацию ПЕРЕД сохранением
+      if (!currentUser) {
+          alert("Ошибка: Система не видит вашего входа. Убедитесь, что вы запустили страницу через сервер, а не как файл.");
+          console.error("Попытка сохранения без авторизации");
           return;
       }
 
-      // Используем текущее состояние авторизации, а не создаем новый листенер
-      const user = firebase.auth().currentUser || window.currentUser;
-
-      if (!user) {
-        console.log("Нет пользователя — данные не сохраняем в БД");
-        return;
-      }
-
+      // Сохраняем
       const scoreObject = {
-        water: scores[0],
-        protein: scores[1],
-        fats: scores[2],
-        carbs: scores[3],
-        fiber: scores[4],
-        variety: scores[5],
-        organization: scores[6]
+        water: scores[0], protein: scores[1], fats: scores[2],
+        carbs: scores[3], fiber: scores[4], variety: scores[5], organization: scores[6]
       };
 
       firebase.firestore()
         .collection("users")
-        .doc(user.uid)
+        .doc(currentUser.uid) // Используем глобальную переменную
         .collection("nutritionWheel")
         .add({
           createdAt: firebase.firestore.FieldValue.serverTimestamp(),
           scores: scoreObject
         })
         .then(() => {
-          console.log("Колесо успешно сохранено в Firestore");
+          console.log("🎉 Успешно сохранено в БД!");
+          alert("Результаты успешно сохранены в ваш профиль!");
         })
         .catch((error) => {
           console.error("Ошибка сохранения:", error);
+          alert("Ошибка сохранения: " + error.message);
         });
     }
 
-    // ===== Утилиты для Canvas =====
+    // ... (Остальные функции отрисовки: drawWheel, shadeColor и т.д. оставь как были) ...
+    // Вставь сюда функции drawWheel, shadeColor, displayResults, setupWheelHover, displayDetailedScores, resetForm, drawMultilineText
+    // (Я их не дублирую, чтобы не занимать место, они у тебя есть в прошлом ответе)
+    
+    // --- Вставь код отрисовки Canvas ниже ---
     function drawMultilineText(ctx, text, x, y, maxWidth, lineHeight) {
       const words = text.split(' ');
       let line = '';
       const lines = [];
-
       for (let n = 0; n < words.length; n++) {
         const testLine = line + words[n] + ' ';
         const metrics = ctx.measureText(testLine);
@@ -461,11 +463,9 @@
         }
       }
       lines.push(line.trim());
-
       lines.forEach((l, i) => {
         ctx.fillText(l, x, y + i * lineHeight);
       });
-
       return lines.length;
     }
 
@@ -488,10 +488,8 @@
       const resultsDiv = document.getElementById('results');
       const canvas = document.getElementById('wheelCanvas');
       const ctx = canvas.getContext('2d');
-
       resultsDiv.classList.add('show');
       resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
       lastScores = scores.slice();
       drawWheel(ctx, canvas, scores);
       setupWheelHover(canvas, ctx);
@@ -501,17 +499,14 @@
     function setupWheelHover(canvas, ctx) {
       if (hoverBound) return;
       hoverBound = true;
-
       canvas.addEventListener('mousemove', (e) => {
         const rect = canvas.getBoundingClientRect();
         const centerX = canvas.width / 2;
         const centerY = canvas.height / 2;
         const maxRadius = Math.min(centerX, centerY) - WHEEL_PADDING;
-
         const x = e.clientX - rect.left - centerX;
         const y = e.clientY - rect.top - centerY;
         const distance = Math.sqrt(x * x + y * y);
-
         if (distance > maxRadius) {
           if (hoveredSector !== null) {
             hoveredSector = null;
@@ -519,19 +514,15 @@
           }
           return;
         }
-
         let angle = Math.atan2(y, x) + Math.PI / 2;
         if (angle < 0) angle += Math.PI * 2;
-
         const numCategories = categories.length;
         const sector = Math.floor(angle / (Math.PI * 2 / numCategories));
-
         if (hoveredSector !== sector) {
           hoveredSector = sector;
           drawWheel(ctx, canvas, lastScores);
         }
       });
-
       canvas.addEventListener('mouseleave', () => {
         if (hoveredSector !== null) {
           hoveredSector = null;
@@ -545,10 +536,7 @@
       const centerY = canvas.height / 2;
       const maxRadius = Math.min(centerX, centerY) - WHEEL_PADDING;
       const numCategories = categories.length;
-
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Сетка
       ctx.strokeStyle = '#e0e0e0';
       ctx.lineWidth = 1;
       for (let i = 1; i <= 10; i++) {
@@ -556,8 +544,6 @@
         ctx.arc(centerX, centerY, (maxRadius / 10) * i, 0, 2 * Math.PI);
         ctx.stroke();
       }
-
-      // Оси
       ctx.strokeStyle = '#d0d0d0';
       for (let i = 0; i < numCategories; i++) {
         const angle = (Math.PI * 2 * i) / numCategories - Math.PI / 2;
@@ -566,14 +552,11 @@
         ctx.lineTo(centerX + maxRadius * Math.cos(angle), centerY + maxRadius * Math.sin(angle));
         ctx.stroke();
       }
-
-      // Сектора
       for (let i = 0; i < numCategories; i++) {
         const score = scores[i];
         const radius = (maxRadius / 10) * score;
         const startAngle = (Math.PI * 2 * i) / numCategories - Math.PI / 2;
         const endAngle = (Math.PI * 2 * (i + 1)) / numCategories - Math.PI / 2;
-
         ctx.fillStyle = (hoveredSector === i) ? shadeColor(categories[i].color, -15) : categories[i].color;
         ctx.beginPath();
         ctx.moveTo(centerX, centerY);
@@ -581,36 +564,26 @@
         ctx.closePath();
         ctx.fill();
       }
-
-      // Подписи
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-
       for (let i = 0; i < numCategories; i++) {
         const startAngle = (Math.PI * 2 * i) / numCategories - Math.PI / 2;
         const endAngle = (Math.PI * 2 * (i + 1)) / numCategories - Math.PI / 2;
         const midAngle = (startAngle + endAngle) / 2;
         const labelRadius = maxRadius + LABEL_RADIUS_ADD;
-        
         const x = centerX + labelRadius * Math.cos(midAngle);
         const y = centerY + labelRadius * Math.sin(midAngle);
-
         const title = `${categories[i].emoji} ${categories[i].name}`;
         const value = `${scores[i]}/10`;
-
         const maxTextWidth = 120;
         const lineHeight = 16;
-
         ctx.font = 'bold 14px Arial';
         const estimatedLines = Math.max(1, Math.ceil(ctx.measureText(title).width / maxTextWidth));
         const totalHeight = estimatedLines * lineHeight + 18;
-
         ctx.fillStyle = 'rgba(255,255,255,0.92)';
         ctx.fillRect(x - maxTextWidth/2 - 8, y - totalHeight/2 - 8, maxTextWidth + 16, totalHeight + 16);
-
         ctx.fillStyle = '#2c3e50';
         drawMultilineText(ctx, title, x, y - 8, maxTextWidth, lineHeight);
-
         ctx.font = 'bold 13px Arial';
         ctx.fillStyle = categories[i].color;
         ctx.fillText(value, x, y + totalHeight/2 - 12);
@@ -636,7 +609,6 @@
       lastScores = [];
     }
 
-    // Анимация при загрузке
     window.addEventListener('load', () => {
       const container = document.querySelector('.container');
       if(container) {
@@ -645,6 +617,6 @@
         container.style.transform = 'translateY(0)';
       }
     });
-  </script>
+</script>
 </body>
 </html>
