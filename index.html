@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KPP Care Control</title>
+    <!-- ВАЖНО: Основные стили должны быть первыми -->
+    <link rel="stylesheet" href="styles.css">
+    <!-- Стили админ-панели -->
+    <link rel="stylesheet" href="admin-styles.css">
+    <style>
+    /* Критичные стили админ-панели (загружаются сразу) */
+    .admin-overview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 20px;
+      padding: 20px;
+    }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- Экран входа (ОРИГИНАЛЬНЫЙ ДИЗАЙН - НЕ МЕНЯТЬ!) -->
+        <div id="login-screen" class="screen">
+            <div class="login-container">
+                <h1>🏃 KPP Care Control</h1>
+                <p class="subtitle">Отслеживание ежедневной активности</p>
+                <form id="login-form">
+                    <input type="text" id="login-username" placeholder="Логин" required autocomplete="username">
+                    <input type="password" id="login-password" placeholder="Пароль" required autocomplete="current-password">
+                    <button type="submit">Войти</button>
+                </form>
+                <p class="hint">При первом входе введите свой логин и пароль - они будут сохранены</p>
+            </div>
+        </div>
+
+        <!-- Главный экран пользователя -->
+        <div id="user-screen" class="screen hidden">
+            <header class="app-header">
+                <h2 id="user-welcome">Добро пожаловать!</h2>
+                <button id="logout-btn" class="btn-secondary">Выйти</button>
+            </header>
+
+            <nav class="tabs">
+                <button class="tab-btn active" data-tab="summary">📊 Сводка</button>
+                <button class="tab-btn" data-tab="steps">🚶 Шаги</button>
+                <button class="tab-btn" data-tab="morningExercise">🧘 Зарядка</button>
+                <button class="tab-btn" data-tab="abs">💪 Пресс</button>
+                <button class="tab-btn" data-tab="workout">🏋️ Тренировки</button>
+                <button class="tab-btn" data-tab="water">💧 Вода</button>
+                <button class="tab-btn" data-tab="nutrition">🍽️ Питание</button>
+                <button class="tab-btn" data-tab="sleep">🛏️ Сон</button>
+                <button class="tab-btn" data-tab="measurements">📏 Измерения</button>
+            </nav>
+
+            <main class="content">
+                <!-- Вкладка: Сводка -->
+                <section id="tab-summary" class="tab-content active">
+                    <!-- Скрытый элемент для совместимости с JS -->
+                    <div id="today-date" style="display: none;"></div>
+                    
+                    <!-- НОВЫЙ КОНТЕЙНЕР ДЛЯ БЛОКОВ "СЕГОДНЯ" И "СТАТИСТИКА" -->
+                    <div id="summary-blocks">
+                        <!-- Блоки будут вставлены через JavaScript из ui-v4.7-NEW-SUMMARY.js -->
+                    </div>
+
+                    <!-- Пропущенные дни -->
+                    <div class="missing-days" id="missing-days-alert"></div>
+
+                    <!-- Форма ввода данных -->
+                    <div class="input-section">
+                        <h3>Ввести данные за сегодня</h3>
+                        <form id="today-form" class="compact-form">
+                            <div class="form-row">
+                                <label>
+                                    Всего шагов
+                                    <input type="number" id="input-total-steps" min="0" placeholder="0">
+                                </label>
+                                <label>
+                                    Шагов на дорожке
+                                    <input type="number" id="input-treadmill-steps" min="0" placeholder="0">
+                                </label>
+                            </div>
+                            <div class="form-row">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="input-morningExercise">
+                                    Зарядка выполнена
+                                </label>                                 
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="input-workout">
+                                    Была тренировка
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="input-abs">
+                                    Пресс сделан
+                                </label>
+                            </div>
+                            <div class="form-row">
+                                <label>
+                                    Питание
+                                    <select id="input-nutrition">
+                                        <option value="2">Существенное переедание</option>
+                                        <option value="1">Небольшое переедание</option>
+                                        <option value="0" selected>По плану</option>
+                                        <option value="-1">Небольшое недоедание</option>
+                                        <option value="-2">Существенное недоедание</option>
+                                    </select>
+                                </label>
+                                <label>
+                                    Вода
+                                    <select id="input-water">
+                                        <option value="0">&lt;250 мл</option>
+                                        <option value="1">250–500 мл</option>
+                                        <option value="2">500–750 мл</option>
+                                        <option value="3" selected>750–1000 мл</option>
+                                        <option value="4">1–1.5 л</option>
+                                        <option value="5">1.5–2 л</option>
+                                        <option value="6">&gt;2 л</option>
+                                    </select>
+                                </label>
+                            </div>
+                            
+                            <!-- ✅ НОВЫЙ БЛОК: СОН -->
+                            <div class="form-section sleep-section" style="background-color: #f0f8ff; padding: 15px; border-radius: 8px; margin-top: 20px; border-left: 4px solid #667eea;">
+                                <h4 style="margin: 0 0 15px 0; color: #667eea;">💤 Сон</h4>
+                                <div class="form-row">
+                                    <label>
+                                        Во сколько легли вчера?
+                                        <input type="time" id="input-bed-time" placeholder="23:30">
+                                    </label>
+                                    <label>
+                                        Во сколько встали сегодня?
+                                        <input type="time" id="input-wake-time" placeholder="07:00">
+                                    </label>
+                                </div>
+                                <div id="sleep-duration-display" style="text-align: center; margin-top: 10px; font-size: 1.1em; color: #667eea; font-weight: bold;">
+                                    Длительность: <span id="sleep-duration-value">—</span>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn-primary" style="margin-top: 20px;">Сохранить</button>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- Вкладка: Шаги -->
+                <section id="tab-steps" class="tab-content">
+                    <div class="stats-header">
+                        <h3>История шагов</h3>
+                        <div class="stats-summary" id="steps-stats"></div>
+                    </div>
+                    <div class="history-container" id="steps-history"></div>
+                </section>
+                
+                <!-- Вкладка: Зарядка -->
+                <section id="tab-morningExercise" class="tab-content">
+                    <div class="stats-header">
+                        <h3>История зарядки</h3>
+                        <div class="stats-summary" id="morningExercise-stats"></div>
+                    </div>
+                    <div class="history-container" id="morningExercise-history"></div>
+                </section>
+
+                <!-- Вкладка: Пресс -->
+                <section id="tab-abs" class="tab-content">
+                    <div class="stats-header">
+                        <h3>История пресса</h3>
+                        <div class="stats-summary" id="abs-stats"></div>
+                    </div>
+                    <div class="history-container" id="abs-history"></div>
+                </section>
+
+                <!-- Вкладка: Тренировки -->
+                <section id="tab-workout" class="tab-content">
+                    <div class="stats-header">
+                        <h3>История тренировок</h3>
+                        <div class="stats-summary" id="workout-stats"></div>
+                    </div>
+                    <div class="history-container" id="workout-history"></div>
+                </section>
+
+                <!-- Вкладка: Вода -->
+                <section id="tab-water" class="tab-content">
+                    <div class="stats-header">
+                        <h3>История потребления воды</h3>
+                        <div class="stats-summary" id="water-stats"></div>
+                    </div>
+                    <div class="history-container" id="water-history"></div>
+                </section>
+
+                <!-- Вкладка: Питание -->
+                <section id="tab-nutrition" class="tab-content">
+                    <div class="stats-header">
+                        <h3>История питания</h3>
+                        <div class="stats-summary" id="nutrition-stats"></div>
+                    </div>
+                    <div class="history-container" id="nutrition-history"></div>
+                </section>
+                <!-- После секции tab-nutrition добавь: -->
+
+                <!-- Вкладка Сон -->
+                    <section id="tab-sleep" class="tab-content">
+                      <div class="stats-header">
+                        <h3>🛏️ История сна</h3>
+                        <div class="stats-summary" id="sleep-stats"></div>
+                      </div>
+                      
+                      <div class="history-container">
+                        <div class="history-section">
+                          <h4>Последние 7 дней</h4>
+                          <div id="sleep-last-week" class="history-grid"></div>
+                        </div>
+                        
+                        <div class="history-section">
+                          <h4>По неделям (с понедельника)</h4>
+                          <div id="sleep-by-weeks"></div>
+                        </div>
+                      </div>
+                    </section>
+             
+                <!-- Вкладка: Измерения -->
+                <section id="tab-measurements" class="tab-content">
+                    <div id="measurements-form"></div>
+                    <div id="measurements-history"></div>
+                </section>
+            </main>
+        </div>
+                   
+        <!-- Главный экран админа (ИСПРАВЛЕННАЯ СТРУКТУРА) -->
+        <div id="admin-screen" class="screen hidden">
+            <header class="app-header">
+                <h2>👑 Админ-панель</h2>
+                <button id="admin-logout-btn" class="btn-secondary">Выйти</button>
+            </header>
+        
+            <!-- ВКЛАДКИ АДМИНИСТРАТОРА -->
+            <nav class="tabs">
+                <button class="admin-tab-btn active" data-admin-tab="overview">
+                    📊 Обзор
+                </button>
+                <button class="admin-tab-btn" data-admin-tab="detailed">
+                    📈 Детально
+                </button>
+            </nav>
+        
+            <main class="content">
+                <!-- ВКЛАДКА ОБЗОР (существующий функционал) -->
+                <div id="admin-tab-overview" class="admin-tab-content active">
+                    <div id="users-list" class="users-grid">
+                        <!-- Карточки пользователей отрисуются здесь -->
+                    </div>
+                </div>
+        
+                <!-- ВКЛАДКА ДЕТАЛЬНО (новый функционал с графиками) -->
+                <div id="admin-tab-detailed" class="admin-tab-content">
+                    <div id="admin-detailed-content">
+                        <!-- 6 графиков отрисуются здесь -->
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <!-- Chart.js для графиков -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <!-- Наши скрипты (ВАЖНО: порядок подключения!) -->
+    <script src="config.js"></script>
+    <script src="firebase-init.js"></script>
+    <script src="auth.js"></script>
+    <script src="data-logic.js"></script>
+    <script src="measurements-logic.js"></script>
+    <!-- ✅ НОВЫЙ СКРИПТ: Логика сна -->
+    <script src="sleep-logic.js"></script>
+    <!-- Админ-панель: admin-logic.js ДОЛЖЕН быть раньше admin-ui.js -->
+    <script src="admin-logic.js"></script>
+    <script src="admin-ui.js"></script>
+    <script src="ui.js"></script>
+    <script src="app.js"></script>
+    <!-- ✅ НОВЫЙ СКРИПТ: Обработчики формы сна -->
+    <script src="sleep-ui.js"></script>
+    <script src="wheel-integration.js"></script>
+
+  <style>
+    /* Скрытая подложка */
+    #wheel-modal-overlay {
+        display: none; /* Скрыто по умолчанию */
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(0,0,0,0.8); /* Темный фон */
+        z-index: 9999; /* Поверх всего */
+        overflow-y: auto;
+    }
+
+    /* Само окно */
+    .wheel-modal-content {
+        background: #fff;
+        margin: 50px auto;
+        padding: 20px;
+        width: 95%;
+        max-width: 800px;
+        border-radius: 15px;
+        position: relative;
+        font-family: sans-serif;
+    }
+
+    /* Кнопка закрыть */
+    .wheel-close-btn {
+        position: absolute;
+        top: 15px; right: 20px;
+        font-size: 30px;
+        cursor: pointer;
+        color: #555;
+        font-weight: bold;
+    }
+
+    /* Стили категорий внутри колеса */
+    .wheel-category {
+        border: 1px solid #eee;
+        padding: 15px;
+        margin-bottom: 10px;
+        border-radius: 8px;
+        background: #f9f9f9;
+    }
+    .wheel-category h3 { margin-top: 0; }
+    .wheel-question { margin-bottom: 8px; display: block; }
+    
+    /* Кнопка расчета */
+    .wheel-action-btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 15px 30px;
+        font-size: 18px;
+        border-radius: 30px;
+        cursor: pointer;
+        width: 100%;
+        margin-top: 20px;
+    }
+    .wheel-action-btn:hover { opacity: 0.9; }
+</style>
+
+<div id="wheel-modal-overlay">
+    <div class="wheel-modal-content">
+        <span class="wheel-close-btn" onclick="toggleWheelModal(false)">&times;</span>
+        
+        <h2 style="text-align:center">🎯 Колесо баланса питания</h2>
+        <p style="text-align:center; color:#666;">Заполните чеклист и сохраните результат</p>
+
+        <form id="wheel-form">
+            
+            <div class="wheel-category" style="border-left: 5px solid #3498db;">
+                <h3>💧 Вода</h3>
+                <label class="wheel-question"><input type="checkbox" name="water"> Я отличаю жажду от голода</label>
+                <label class="wheel-question"><input type="checkbox" name="water"> Я начинаю утро с воды</label>
+                <label class="wheel-question"><input type="checkbox" name="water"> Тестовый глоток</label>
+                </div>
+
+             <div class="wheel-category" style="border-left: 5px solid #e74c3c;">
+                <h3>🥩 Белок</h3>
+                <label class="wheel-question"><input type="checkbox" name="protein"> Ем белок каждый день</label>
+                </div>
+
+             <div class="wheel-category" style="border-left: 5px solid #f39c12;">
+                <h3>🥑 Жиры</h3>
+                <label class="wheel-question"><input type="checkbox" name="fats"> Ем полезные жиры</label>
+                </div>
+            
+            </form>
+
+        <button class="wheel-action-btn" onclick="calculateAndSaveWheel()">
+            💾 Рассчитать и Сохранить
+        </button>
+
+        <div id="wheel-result-area" style="display:none; margin-top:20px; text-align:center;">
+            <h3>Результат сохранен! ✅</h3>
+            <p>Ваши данные успешно отправлены в базу.</p>
+            <canvas id="wheel-canvas-mini" width="300" height="300" style="max-width:100%"></canvas>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Открыть/Закрыть окно
+    function toggleWheelModal(show) {
+        document.getElementById('wheel-modal-overlay').style.display = show ? 'block' : 'none';
+    }
+
+    // Главная функция: Считает галочки и отправляет в базу
+    function calculateAndSaveWheel() {
+        // 1. Проверяем авторизацию (берем из ТВОЕГО основного приложения)
+        const user = firebase.auth().currentUser;
+        if (!user) {
+            alert("⚠️ Ошибка: Вы не авторизованы! Обновите страницу.");
+            return;
+        }
+
+        // 2. Считаем галочки
+        const form = document.getElementById('wheel-form');
+        
+        // Функция-помощник для подсчета
+        const count = (name) => form.querySelectorAll(`input[name="${name}"]:checked`).length;
+
+        const scores = {
+            water: count('water'),
+            protein: count('protein'),
+            fats: count('fats'),
+            carbs: count('carbs'), // Убедись, что добавил вопросы с name="carbs"
+            fiber: count('fiber'), // name="fiber"
+            variety: count('variety'), // name="variety"
+            organization: count('organization') // name="organization"
+        };
+
+        // 3. Отправляем в Firebase
+        firebase.firestore()
+            .collection("users")
+            .doc(user.uid)
+            .collection("nutritionWheel")
+            .add({
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                scores: scores
+            })
+            .then(() => {
+                // 4. Успех
+                document.getElementById('wheel-result-area').style.display = 'block';
+                alert("🎉 Ура! Колесо баланса сохранено в ваш профиль!");
+                
+                // (Опционально) Тут можно нарисовать график, но главное - данные ушли
+            })
+            .catch((error) => {
+                console.error("Ошибка:", error);
+                alert("Ошибка сохранения: " + error.message);
+            });
+    }
+</script>
+</body>
+</html>
